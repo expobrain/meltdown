@@ -1,9 +1,10 @@
 from __future__ import unicode_literals, print_function
 
+from ply.lex import TOKEN
 import ply.lex as lex
 
 
-t_ignore = r' \t'
+identifier = r'[a-zA-Z][\w0-9\-]*'
 
 
 keywords = {
@@ -23,9 +24,25 @@ tokens = keywords.values() + [
     # Delimiters
     'SEMI', 'COLO', 'COMMA', 'DOT', 'LPAREN', 'RPAREN', 'LBRACE', 'RBRACE',
 
-    # Numeric const
-    'INTEGER_CONST'
+    # Numeric consts
+    'INTEGER_CONST',
+
+    # String literals
+    'STRING_LITERAL', 'HTML_TEXT_NODE',
+
+    # Operations
+    'GT', 'LT', 'DIV', 'NEG'
 ]
+
+
+t_ignore = ' \t'
+
+
+# Operations
+t_GT    = r'>'
+t_LT    = r'<'
+t_DIV   = r'/'
+t_NEG   = r"\!"
 
 # Assignment
 t_EQUALS    = r'='
@@ -40,15 +57,36 @@ t_RPAREN    = r'\)'
 t_LBRACE    = r'\{'
 t_RBRACE    = r'\}'
 
-# Keywords
+
+# Error handling rule
+def t_error(t):
+    raise RuntimeError("Illegal character {}".format(repr(t.value[0])))
+    t.lexer.skip(1)
+
+
+# New lines
+def t_NEWLINE(t):
+    r'[\n\r]+'
+    t.lexer.lineno += t.value.count("\n")
+
+
+# Numeric consts
 def t_INTEGER_CONST(t):
     r'\d+'
     t.value = int(t.value)
     return t
 
-# Identifiers
+
+# String consts
+def t_STRING_LITERAL(t):
+    r'".*"'
+    t.value = unicode(t.value)
+    return t
+
+
+# Keyworda & identifiers
+@TOKEN(identifier)
 def t_ID(t):
-    r'[a-zA-Z]+'
     t.type = keywords.get(t.value, 'ID')
     return t
 
