@@ -3,7 +3,7 @@ from __future__ import unicode_literals, print_function
 import unittest
 import os
 
-from reactpy.lexer import lexer
+from reactpy.lexer import ReactLexer
 
 
 class LexerTests(unittest.TestCase):
@@ -11,7 +11,7 @@ class LexerTests(unittest.TestCase):
     TEST_CODE = os.path.join(os.path.dirname(__file__), 'sample.jsx')
 
     def setUp(self):
-        self.lexer = lexer
+        self.lexer = ReactLexer().build()
 
     def assertTokensEqual(self, data, *args):
         self.lexer.input(data)
