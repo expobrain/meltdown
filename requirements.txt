@@ -1,2 +1,2 @@
--e hg+https://bitbucket.org/fdik/pypeg@2.9.0#egg=pyPEG
 nose==1.3.4
+ply==3.4
