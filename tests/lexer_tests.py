@@ -65,9 +65,16 @@ class LexerTests(unittest.TestCase):
         self.assertTokensEqual('(', 'LPAREN')
         self.assertTokensEqual(')', 'RPAREN')
 
-    def test_newline_discard(self):
+    def test_ignore(self):
         self.assertTokensEqual('\n')
-        self.assertTokensEqual('\n\r')
+        self.assertTokensEqual('\n')
+        self.assertTokensEqual(' ')
+        self.assertTokensEqual('\t')
+
+    def test_html_template_token(self):
+        self.assertTokensEqual(
+            'return (<div></div>)',
+            'RETURN', 'LPAREN', ('HTML_TEMPLATE', '<div></div>'), 'RPAREN')
 
     # -------------------------------------------------------------------------
     # Composite tokens

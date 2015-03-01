@@ -26,14 +26,14 @@ class ReactLexer(object):
         'INTEGER_CONST',
 
         # String literals
-        'STRING_LITERAL', 'HTML_TEXT_NODE',
+        'STRING_LITERAL', 'HTML_TEMPLATE',
 
         # Operations
         'GT', 'LT', 'DIV', 'NEG'
     ]
 
     # Ignored characters
-    t_ignore = ' \t'
+    t_ignore = ' \t\n\r'
 
     # Operations
     t_GT    = r'>'
@@ -59,11 +59,6 @@ class ReactLexer(object):
         raise RuntimeError("Illegal character {}".format(repr(t.value[0])))
         t.lexer.skip(1)
 
-    # New lines
-    def t_NEWLINE(self, t):
-        r'[\n\r]+'
-        t.lexer.lineno += t.value.count("\n")
-
     # Numeric consts
     def t_INTEGER_CONST(self, t):
         r'\d+'
@@ -76,7 +71,12 @@ class ReactLexer(object):
         t.value = unicode(t.value)
         return t
 
-    # Keyworda & identifiers
+    def t_HTML_TEMPLATE(self, t):
+        r'(?<=return\s\().*(?=\))'
+        t.value = unicode(t.value)
+        return t
+
+    # Keywords & identifiers
     @TOKEN(identifier)
     def t_ID(self, t):
         t.type = self.keywords.get(t.value, 'ID')
