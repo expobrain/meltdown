@@ -18,6 +18,7 @@ class LexerTests(unittest.TestCase):
 
         for expected in args:
             token = next(self.lexer)
+            print(token)
 
             if isinstance(expected, (list, tuple)):
                 type_, value = expected
@@ -74,14 +75,25 @@ class LexerTests(unittest.TestCase):
     def test_assignment_tokens(self):
         self.assertTokensEqual('=', 'EQUALS')
 
-    def test_html_element_token(self):
+    def test_html_tokens(self):
         self.assertTokensEqual(
             'return (<div>);',
-            'RETURN', 'begin_html', ('HTML_ELEMENT', '<div>'), 'end_html'
+            'RETURN', 'begin_html',
+            ('START_ELEMENT', '<'), ('ELEMENT', 'div'), ('END_ELEMENT', '>'),
+            'end_html'
         )
         self.assertTokensEqual(
             'return (<div class="my-class">);',
-            'RETURN', 'begin_html', ('HTML_ELEMENT', '<div>'), 'end_html'
+            'RETURN', 'begin_html', 'START_ELEMENT',
+            ('ELEMENT', 'div'),
+            ('ATTRIBUTE', 'class'), 'EQUALS', ('VALUE', '"my-class"'),
+            'END_ELEMENT', 'end_html'
+        )
+        self.assertTokensEqual(
+            "return (<b>Hi, I'm a text</b>);",
+            'RETURN', 'begin_html', 'START_ELEMENT', 'ELEMENT', 'END_ELEMENT',
+            ('TEXT_NODE', "Hi, I'm a text"),
+            'START_CLOSING_ELEMENT', 'ELEMENT', 'END_ELEMENT', 'end_html'
         )
 
     # -------------------------------------------------------------------------

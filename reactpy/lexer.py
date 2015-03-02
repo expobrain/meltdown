@@ -43,7 +43,8 @@ class ReactLexer(object):
         'begin_html', 'end_html',
 
         # HTML
-        'HTML_ELEMENT',
+        'START_ELEMENT', 'START_CLOSING_ELEMENT', 'ELEMENT', 'ATTRIBUTE',
+        'END_ELEMENT', 'TEXT_NODE', 'VALUE'
     ]
 
     # Ignored characters
@@ -56,7 +57,7 @@ class ReactLexer(object):
     t_NEG   = r"\!"
 
     # Assignment
-    t_EQUALS    = r'='
+    t_ANY_EQUALS = r'='
 
     # Delimiters
     t_SEMI      = r';'
@@ -103,9 +104,32 @@ class ReactLexer(object):
         return t
 
     # HTML content
-    def t_html_HTML_ELEMENT(self, t):
-        r'\<[a-z]+\>'
-        t.value = unicode(t.value)
+    def t_html_START_ELEMENT(self, t):
+        r'\<(?!/)'
+        return t
+
+    def t_html_START_CLOSING_ELEMENT(self, t):
+        r'\</'
+        return t
+
+    def t_html_ELEMENT(self, t):
+        r'(?<=[</])[a-zA-Z]+'
+        return t
+
+    def t_html_ATTRIBUTE(self, t):
+        r'(?<=\ )[a-zA-Z][a-zA-Z\-]+'
+        return t
+
+    def t_html_VALUE(self, t):
+        r'(?<=\=)".*"(?=[ >])'
+        return t
+
+    def t_html_END_ELEMENT(self, t):
+        r'\>'
+        return t
+
+    def t_html_TEXT_NODE(self, t):
+        r'(?<=\>).*(?=\<)'
         return t
 
     # -------------------------------------------------------------------------
