@@ -1,17 +1,25 @@
 from __future__ import unicode_literals, print_function
 
-from ply.lex import TOKEN
 import ply.lex as lex
 
 
 class ReactLexer(object):
 
-    identifier = r'[a-zA-Z][\w0-9\-]*'
+    # -------------------------------------------------------------------------
+    # Lexer
+    # -------------------------------------------------------------------------
+
+    states = (
+        # ('jsx', 'inclusive'),
+        ('html', 'exclusive'),
+    )
+
     keywords = {
         'var': 'VAR',
         'function': 'FUNCTION',
         'return': 'RETURN',
     }
+
     tokens = keywords.values() + [
         # Identifiers
         'ID',
@@ -26,14 +34,20 @@ class ReactLexer(object):
         'INTEGER_CONST',
 
         # String literals
-        'STRING_LITERAL', 'HTML_TEMPLATE',
+        'STRING_LITERAL',
 
         # Operations
-        'GT', 'LT', 'DIV', 'NEG'
+        'GT', 'LT', 'DIV', 'NEG',
+
+        # States
+        'begin_html', 'end_html',
+
+        # HTML
+        'HTML_ELEMENT',
     ]
 
     # Ignored characters
-    t_ignore = ' \t\n\r'
+    t_ANY_ignore = ' \t\n\r'
 
     # Operations
     t_GT    = r'>'
@@ -55,9 +69,20 @@ class ReactLexer(object):
     t_RBRACE    = r'\}'
 
     # Error handling rule
-    def t_error(self, t):
+    def t_ANY_error(self, t):
         raise RuntimeError("Illegal character {}".format(repr(t.value[0])))
         t.lexer.skip(1)
+
+    # States
+    def t_begin_html(self, t):
+        r'(?<=return\s)\('
+        t.lexer.push_state('html')
+        return t
+
+    def t_html_end_html(self, t):
+        r'\);'
+        t.lexer.pop_state()
+        return t
 
     # Numeric consts
     def t_INTEGER_CONST(self, t):
@@ -71,16 +96,21 @@ class ReactLexer(object):
         t.value = unicode(t.value)
         return t
 
-    def t_HTML_TEMPLATE(self, t):
-        r'(?<=return\s\().*(?=\))'
+    # Keywords & identifiers
+    def t_ID(self, t):
+        r'[a-zA-Z][\w0-9\-]*'
+        t.type = self.keywords.get(t.value, 'ID')
+        return t
+
+    # HTML content
+    def t_html_HTML_ELEMENT(self, t):
+        r'\<[a-z]+\>'
         t.value = unicode(t.value)
         return t
 
-    # Keywords & identifiers
-    @TOKEN(identifier)
-    def t_ID(self, t):
-        t.type = self.keywords.get(t.value, 'ID')
-        return t
+    # -------------------------------------------------------------------------
+    # Class methods
+    # -------------------------------------------------------------------------
 
     def build(self, **kwds):
         self.lexer = lex.lex(object=self, **kwds)

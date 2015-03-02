@@ -11,7 +11,7 @@ class LexerTests(unittest.TestCase):
     TEST_CODE = os.path.join(os.path.dirname(__file__), 'sample.jsx')
 
     def setUp(self):
-        self.lexer = ReactLexer().build()
+        self.lexer = ReactLexer().build(debug=1)
 
     def assertTokensEqual(self, data, *args):
         self.lexer.input(data)
@@ -28,7 +28,7 @@ class LexerTests(unittest.TestCase):
                 self.assertEqual(token.type, expected)
 
         with self.assertRaises(StopIteration):
-            next(self.lexer)
+            print(next(self.lexer))
 
     # -------------------------------------------------------------------------
     # Basic tokens
@@ -71,24 +71,38 @@ class LexerTests(unittest.TestCase):
         self.assertTokensEqual(' ')
         self.assertTokensEqual('\t')
 
-    def test_html_template_token(self):
-        self.assertTokensEqual(
-            'return (<div></div>)',
-            'RETURN', 'LPAREN', ('HTML_TEMPLATE', '<div></div>'), 'RPAREN')
+    def test_assignment_tokens(self):
+        self.assertTokensEqual('=', 'EQUALS')
 
-    # -------------------------------------------------------------------------
-    # Composite tokens
-    # -------------------------------------------------------------------------
-
-    def test_assignment(self):
+    def test_html_element_token(self):
         self.assertTokensEqual(
-            'a=1',
-            ('ID', 'a'), 'EQUALS', ('INTEGER_CONST', 1)
+            'return (<div>);',
+            'RETURN', 'begin_html', ('HTML_ELEMENT', '<div>'), 'end_html'
         )
         self.assertTokensEqual(
-            'a="My string"',
-            ('ID', 'a'), 'EQUALS', ('STRING_LITERAL', u'"My string"')
+            'return (<div class="my-class">);',
+            'RETURN', 'begin_html', ('HTML_ELEMENT', '<div>'), 'end_html'
         )
+
+    # -------------------------------------------------------------------------
+    # Lexer states
+    # -------------------------------------------------------------------------
+
+    def test_enter_html_state(self):
+        self.assertTokensEqual(
+            'return (', 'RETURN', 'begin_html')
+        self.assertEqual(self.lexer.current_state(), 'html')
+
+    def test_end_html_state(self):
+        self.assertTokensEqual(
+            'return ();',
+            'RETURN', 'begin_html', 'end_html'
+        )
+        self.assertEqual(self.lexer.current_state(), 'INITIAL')
+
+    # -------------------------------------------------------------------------
+    # Other
+    # -------------------------------------------------------------------------
 
     def test_with_full_code(self):
         self.lexer.input(open(self.TEST_CODE).read())
