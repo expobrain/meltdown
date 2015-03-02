@@ -13,12 +13,13 @@ class LexerTests(unittest.TestCase):
     def setUp(self):
         self.lexer = ReactLexer().build(debug=1)
 
-    def assertTokensEqual(self, data, *args):
+    def assertTokensEqual(self, data, *args, **kwds):
         self.lexer.input(data)
+        self.lexer.push_state(kwds.pop('state', 'INITIAL'))
 
         for expected in args:
             token = next(self.lexer)
-            print(token)
+            print(self.lexer.current_state(), token)
 
             if isinstance(expected, (list, tuple)):
                 type_, value = expected
@@ -77,23 +78,23 @@ class LexerTests(unittest.TestCase):
 
     def test_html_tokens(self):
         self.assertTokensEqual(
-            'return (<div>);',
-            'RETURN', 'begin_html',
+            '<div>',
             ('START_ELEMENT', '<'), ('ELEMENT', 'div'), ('END_ELEMENT', '>'),
-            'end_html'
+            state='html'
         )
         self.assertTokensEqual(
-            'return (<div class="my-class">);',
-            'RETURN', 'begin_html', 'START_ELEMENT',
-            ('ELEMENT', 'div'),
+            '<div class="my-class">',
+            'START_ELEMENT', ('ELEMENT', 'div'),
             ('ATTRIBUTE', 'class'), 'EQUALS', ('VALUE', '"my-class"'),
-            'END_ELEMENT', 'end_html'
+            'END_ELEMENT',
+            state='html'
         )
         self.assertTokensEqual(
-            "return (<b>Hi, I'm a text</b>);",
-            'RETURN', 'begin_html', 'START_ELEMENT', 'ELEMENT', 'END_ELEMENT',
+            "<b>Hi, I'm a text</b>",
+            'START_ELEMENT', 'ELEMENT', 'END_ELEMENT',
             ('TEXT_NODE', "Hi, I'm a text"),
-            'START_CLOSING_ELEMENT', 'ELEMENT', 'END_ELEMENT', 'end_html'
+            'START_CLOSING_ELEMENT', 'ELEMENT', 'END_ELEMENT',
+            state='html'
         )
 
     # -------------------------------------------------------------------------
