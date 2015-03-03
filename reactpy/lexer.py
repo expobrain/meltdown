@@ -1,5 +1,7 @@
 from __future__ import unicode_literals, print_function
 
+import pprint
+
 import ply.lex as lex
 
 
@@ -10,7 +12,6 @@ class ReactLexer(object):
     # -------------------------------------------------------------------------
 
     states = (
-        # ('jsx', 'inclusive'),
         ('html', 'exclusive'),
     )
 
@@ -40,15 +41,16 @@ class ReactLexer(object):
         'GT', 'LT', 'DIV', 'NEG',
 
         # States
-        'begin_html', 'end_html',
+        'begin_html', 'end_html', 'begin_tag', 'end_tag',
 
         # HTML
-        'START_ELEMENT', 'START_CLOSING_ELEMENT', 'ELEMENT', 'ATTRIBUTE',
-        'END_ELEMENT', 'TEXT_NODE', 'VALUE'
+        'CLOSING_TAG', 'NAME', 'ATTRIBUTE', 'VALUE', 'TEXT_NODE', 'START_TAG',
+        'END_TAG', 'SELF_CLOSING_TAG', 'SPACE'
     ]
 
     # Ignored characters
-    t_ANY_ignore = ' \t\n\r'
+    t_ignore = ' \t\n\r\f\v'
+    # t_ANY_ignore = ' \t\n\r\f\v'
 
     # Operations
     t_GT    = r'>'
@@ -69,10 +71,37 @@ class ReactLexer(object):
     t_LBRACE    = r'\{'
     t_RBRACE    = r'\}'
 
+    # HTML content
+    t_html_SPACE            = r'\s+'
+    t_html_START_TAG        = r'\<'
+    t_html_END_TAG          = r'\>'
+    t_html_CLOSING_TAG      = r'(?<=\<)/'
+    t_html_SELF_CLOSING_TAG = r'/(?=\>)'
+    t_html_NAME             = r'(?<=[</\/])[a-zA-Z]+'
+    t_html_VALUE            = r'(?<=\=)".*"(?=[ />])'
+
+    def t_html_TEXT_NODE(self, t):
+        r'(?<=\>)\s*.+\s*(?=\<)'
+        t.value = t.value.strip()
+        return t
+
+    def t_html_ATTRIBUTE(self, t):
+        r'(?<=[a-zA-Z])\s*[a-zA-Z][a-zA-Z\-]*(?=[\s\=\>])'
+        t.value = t.value.strip()
+        return t
+
     # Error handling rule
     def t_ANY_error(self, t):
-        raise RuntimeError("Illegal character {}".format(repr(t.value[0])))
-        t.lexer.skip(1)
+        pprint.pprint(t.lexer.__dict__)
+
+        start = max(t.lexpos - 10, 0)
+        end = start + 20 + 1
+        fragment = repr(t.lexer.lexdata[start:end])
+
+        print(fragment)
+        print('^'.center(len(fragment), '~'))
+
+        raise ValueError("Illegal character {}".format(repr(t.value[0])))
 
     # States
     def t_begin_html(self, t):
@@ -101,35 +130,6 @@ class ReactLexer(object):
     def t_ID(self, t):
         r'[a-zA-Z][\w0-9\-]*'
         t.type = self.keywords.get(t.value, 'ID')
-        return t
-
-    # HTML content
-    def t_html_START_ELEMENT(self, t):
-        r'\<(?!/)'
-        return t
-
-    def t_html_START_CLOSING_ELEMENT(self, t):
-        r'\</'
-        return t
-
-    def t_html_ELEMENT(self, t):
-        r'(?<=[</])[a-zA-Z]+'
-        return t
-
-    def t_html_ATTRIBUTE(self, t):
-        r'(?<=\ )[a-zA-Z][a-zA-Z\-]+'
-        return t
-
-    def t_html_VALUE(self, t):
-        r'(?<=\=)".*"(?=[ >])'
-        return t
-
-    def t_html_END_ELEMENT(self, t):
-        r'\>'
-        return t
-
-    def t_html_TEXT_NODE(self, t):
-        r'(?<=\>).*(?=\<)'
         return t
 
     # -------------------------------------------------------------------------

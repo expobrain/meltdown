@@ -79,21 +79,29 @@ class LexerTests(unittest.TestCase):
     def test_html_tokens(self):
         self.assertTokensEqual(
             '<div>',
-            ('START_ELEMENT', '<'), ('ELEMENT', 'div'), ('END_ELEMENT', '>'),
+            ('START_TAG', '<'), ('NAME', 'div'), ('END_TAG', '>'),
             state='html'
         )
         self.assertTokensEqual(
             '<div class="my-class">',
-            'START_ELEMENT', ('ELEMENT', 'div'),
+            'START_TAG',
+            ('NAME', 'div'),
             ('ATTRIBUTE', 'class'), 'EQUALS', ('VALUE', '"my-class"'),
-            'END_ELEMENT',
+            'END_TAG',
             state='html'
         )
         self.assertTokensEqual(
             "<b>Hi, I'm a text</b>",
-            'START_ELEMENT', 'ELEMENT', 'END_ELEMENT',
+            'START_TAG', 'NAME', 'END_TAG',
             ('TEXT_NODE', "Hi, I'm a text"),
-            'START_CLOSING_ELEMENT', 'ELEMENT', 'END_ELEMENT',
+            'START_TAG', 'CLOSING_TAG', 'NAME', 'END_TAG',
+            state='html'
+        )
+        self.assertTokensEqual(
+            "<b> I've spaces </b>",
+            'START_TAG', 'NAME', 'END_TAG',
+            ('TEXT_NODE', "I've spaces"),
+            'START_TAG', 'CLOSING_TAG', 'NAME', 'END_TAG',
             state='html'
         )
 
@@ -121,6 +129,7 @@ class LexerTests(unittest.TestCase):
         self.lexer.input(open(self.TEST_CODE).read())
 
         try:
-            [t for t in self.lexer]
+            for token in self.lexer:
+                print(self.lexer.current_state(), '->', token)
         except Exception as e:
             self.fail(e)
