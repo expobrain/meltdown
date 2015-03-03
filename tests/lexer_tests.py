@@ -17,6 +17,14 @@ class LexerTests(unittest.TestCase):
         self.lexer.input(data)
         self.lexer.push_state(kwds.pop('state', 'INITIAL'))
 
+        data = repr(data)
+
+        print('=' * 80)
+        while data:
+            print(data[:80])
+            data = data[80:]
+        print('-' * 80)
+
         for expected in args:
             token = next(self.lexer)
             print(self.lexer.current_state(), token)
