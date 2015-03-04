@@ -1,15 +1,24 @@
 from __future__ import unicode_literals, print_function
 
-import pprint
+import functools
 
 import ply.lex as lex
 
 
 class ReactLexer(object):
 
-    # -------------------------------------------------------------------------
-    # Lexer
-    # -------------------------------------------------------------------------
+    # =========================================================================
+    # Configuration
+    # =========================================================================
+
+    def update_lineno(fn):
+
+        @functools.wraps(fn)
+        def _wrapper(self, t):
+            t.lexer.lineno += t.value.count('\n')
+            return fn(self, t)
+
+        return _wrapper
 
     states = (
         ('html', 'exclusive'),
@@ -49,8 +58,55 @@ class ReactLexer(object):
     ]
 
     # Ignored characters
-    t_ignore = ' \t\n\r\f\v'
-    # t_ANY_ignore = ' \t\n\r\f\v'
+    t_ignore = ' \t\r\f\v'
+
+    # =========================================================================
+    # Handlers
+    # =========================================================================
+
+    # Error handling rule
+    def t_ANY_error(self, t):
+        # Print data fragment
+        start = max(t.lexpos - 10, 0)
+        end = start + 20 + 1
+        fragment = repr(t.lexer.lexdata[start:end])
+
+        print(fragment)
+        print('^'.center(len(fragment), '~'))
+
+        # Find column
+        last_cr = max(t.lexer.lexdata.rfind('\n', 0, t.lexpos), 0)
+        column = (t.lexpos - last_cr) + 1
+
+        # Raise exception
+        raise ValueError(
+            "Illegal character {} at line {} column {}"
+            .format(repr(t.value[0]), t.lexer.lineno, column)
+        )
+
+    # States
+    def t_begin_html(self, t):
+        r'(?<=return\s)\('
+        t.lexer.push_state('html')
+        return t
+
+    def t_html_end_html(self, t):
+        r'\);'
+        t.lexer.pop_state()
+        return t
+
+    # =========================================================================
+    # Token definitions
+    # =========================================================================
+
+    # -------------------------------------------------------------------------
+    # INITIAL state - React JSX
+    # -------------------------------------------------------------------------
+
+    # New line tracking
+    @update_lineno
+    def t_newline(self, t):
+        r'\n+'
 
     # Operations
     t_GT    = r'>'
@@ -71,49 +127,6 @@ class ReactLexer(object):
     t_LBRACE    = r'\{'
     t_RBRACE    = r'\}'
 
-    # HTML content
-    t_html_SPACE            = r'\s+'
-    t_html_START_TAG        = r'\<'
-    t_html_END_TAG          = r'\>'
-    t_html_CLOSING_TAG      = r'(?<=\<)/'
-    t_html_SELF_CLOSING_TAG = r'/(?=\>)'
-    t_html_NAME             = r'(?<=[</\/])[a-zA-Z]+'
-    t_html_VALUE            = r'(?<=\=)".*"(?=[ />])'
-
-    def t_html_TEXT_NODE(self, t):
-        r'(?<=\>)\s*.+\s*(?=\<)'
-        t.value = t.value.strip()
-        return t
-
-    def t_html_ATTRIBUTE(self, t):
-        r'(?<=[a-zA-Z])\s*[a-zA-Z][a-zA-Z\-]*(?=[\s\=\>])'
-        t.value = t.value.strip()
-        return t
-
-    # Error handling rule
-    def t_ANY_error(self, t):
-        pprint.pprint(t.lexer.__dict__)
-
-        start = max(t.lexpos - 10, 0)
-        end = start + 20 + 1
-        fragment = repr(t.lexer.lexdata[start:end])
-
-        print(fragment)
-        print('^'.center(len(fragment), '~'))
-
-        raise ValueError("Illegal character {}".format(repr(t.value[0])))
-
-    # States
-    def t_begin_html(self, t):
-        r'(?<=return\s)\('
-        t.lexer.push_state('html')
-        return t
-
-    def t_html_end_html(self, t):
-        r'\);'
-        t.lexer.pop_state()
-        return t
-
     # Numeric consts
     def t_INTEGER_CONST(self, t):
         r'\d+'
@@ -133,8 +146,33 @@ class ReactLexer(object):
         return t
 
     # -------------------------------------------------------------------------
-    # Class methods
+    # HTML state
     # -------------------------------------------------------------------------
+
+    # HTML content
+    t_html_SPACE            = r'\s+'
+    t_html_START_TAG        = r'\<'
+    t_html_END_TAG          = r'\>'
+    t_html_CLOSING_TAG      = r'(?<=\<)/'
+    t_html_SELF_CLOSING_TAG = r'/(?=\>)'
+    t_html_NAME             = r'(?<=[</\/])[a-zA-Z]+'
+    t_html_VALUE            = r'(?<=\=)".*"(?=[ />])'
+
+    @update_lineno
+    def t_html_TEXT_NODE(self, t):
+        r'(?<=\>)\s*.+\s*(?=\<)'
+        t.value = t.value.strip()
+        return t
+
+    @update_lineno
+    def t_html_ATTRIBUTE(self, t):
+        r'(?<=[a-zA-Z])\s*[a-zA-Z][a-zA-Z\-]*(?=[\s\=\>])'
+        t.value = t.value.strip()
+        return t
+
+    # =========================================================================
+    # Class methods
+    # =========================================================================
 
     def build(self, **kwds):
         self.lexer = lex.lex(object=self, **kwds)
