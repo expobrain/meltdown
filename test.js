@@ -2,8 +2,9 @@ var fs = require('fs');
 var esprima = require('esprima-fb');
 var _ = require('lodash');
 
-var sample = fs.readFileSync('./tests/sample.jsx');
-var ast = esprima.parse(sample);
+var inputFile = fs.readFileSync('./tests/sample.jsx');
+var outputFd = fs.openSync('./tests/sample.html', 'w');
+var ast = esprima.parse(inputFile);
 
 
 function visitor(node, context) {
@@ -11,20 +12,15 @@ function visitor(node, context) {
     // Skip if node is null
     if (!node) {
         return;
+    } else if (_.isArray(node)) {
+        _.forEach(node, function(n) {
+            visitor(n);
+        });
+        return;
     }
 
-    // Init context
-    var nextNodes = [],
-        nextContext;
-
-    context = context ? _.cloneDeep(context) : {};
-    context = _.defaults(context, {
-        indent: 0,
-        callee: ''
-    });
-
     // Log current node
-    console.log(_.repeat(' ', context.indent), node.type, context.callee);
+    console.log(node.type);
 
     // Scan node
     switch (node.type) {
@@ -34,32 +30,31 @@ function visitor(node, context) {
 
         case "BlockStatement":
         case "Program":
-            nextNodes = nextNodes.concat(node.body);
+            visitor(node.body);
             break;
 
         case "VariableDeclaration":
-            nextNodes = nextNodes.concat(node.declarations);
+            visitor(node.declarations);
             break;
 
         case "VariableDeclarator":
-            nextNodes.push(node.init);
+            visitor(node.init);
             break;
 
         case "CallExpression":
-            nextNodes = nextNodes.concat(node.arguments);
-            context.callee = node.callee.type;
+            visitor(node.arguments);
             break;
 
         case "ObjectExpression":
-            nextNodes = nextNodes.concat(node.properties);
+            visitor(node.properties);
             break;
 
         case "ReturnStatement":
-            nextNodes.push(node.argument);
+            visitor(node.argument);
             break;
 
         case "FunctionExpression":
-            nextNodes.push(node.body);
+            visitor(node.body);
             break;
 
         case "Property":
@@ -80,17 +75,19 @@ function visitor(node, context) {
             }
 
             if (name !== 'render') {
-                console.log(_.repeat(' ', context.indent), '- Skipping property', name);
                 return;
             }
 
-            context.callee = {type: node.type, name: name};
-            nextNodes.push(node.value);
+            visitor(node.value);
             break;
 
         case "Literal":
+            if (node.raw) {
+                fs.writeSync(outputFd, node.raw);
+            }
+
             if (node.value && node.value.type) {
-                nextNodes.push(node.value);
+                visitor(node.value);
             }
             break;
 
@@ -98,23 +95,35 @@ function visitor(node, context) {
         // JSX
         // --------------------------------------------------------------------
 
-        case "JSXElement":
-            nextNodes.push(node.openingElement);
-            nextnodes = nextNodes.concat(node.children);
-            nextNodes.push(node.closingElement);
+        case "JSXOpeningElement":
+            fs.writeSync(outputFd, '<' + node.name.name);
+            visitor(node.attributes);
             break;
 
-        case "JSXOpeningElement":
-            nextNodes = nextNodes.concat(node.attributes);
+        case "JSXElement":
+            console.log(node);
+            visitor(node.openingElement);
+            fs.writeSync(outputFd, '>');
+            visitor(node.children);
+            visitor(node.closingElement);
             break;
 
         case "JSXAttribute":
-            nextNodes.push(node.name);
-            nextNodes.push(node.value);
+            fs.writeSync(outputFd, ' ' + node.name.name);
+
+            if (node.value) {
+                fs.writeSync(outputFd, '=');
+            }
+
+            visitor(node.name);
+            visitor(node.value);
             break;
 
         case "JSXIdentifier":
+            break;
+
         case "JSXClosingElement":
+            fs.writeSync(outputFd, '</' + node.name.name + '>');
             break;
 
         // --------------------------------------------------------------------
@@ -125,13 +134,6 @@ function visitor(node, context) {
             console.log('Unknonw node:\n', node);
             return;
     }
-
-    // Process children
-    context.indent += 2;
-
-    _.forEach(nextNodes, function (nextNode) {
-        visitor(nextNode, context);
-    });
 }
 
 
