@@ -1,11 +1,11 @@
 {
   "name": "reactpy",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "",
-  "main": "index.js",
-  "dependencies": {
-    "react": "^0.12.2"
-  },
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "devDependencies": {
+    "lodash": "^3.4.0",
+    "esprima-fb": "^13001.1001.0-dev-harmony-fb"
+  }
 }

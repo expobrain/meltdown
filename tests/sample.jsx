@@ -1,5 +1,5 @@
 var CommentBox = React.createClass({
-    componenetDidMount: function () {
+    componentDidMount: function () {
 
     },
     render: function() {
