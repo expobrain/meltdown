@@ -4,10 +4,33 @@ var _ = require('lodash');
 
 var inputFile = fs.readFileSync('./tests/sample.jsx');
 var outputFd = fs.openSync('./tests/sample.html', 'w');
+
 var ast = esprima.parse(inputFile);
 
+// Dump AST into JSON
+var stringify = require('./tests/stringify');
+var dumpFd = fs.openSync('./tests/ast.json', 'w');
 
-function visitor(node, context) {
+fs.writeSync(dumpFd, stringify(ast));
+fs.closeSync(dumpFd);
+
+var context = {
+    path: [],
+    indent: 0
+};
+
+
+function writeNewline() {
+    write('\n' + _.repeat(' ', context.indent));
+}
+
+
+function write(data) {
+    fs.writeSync(outputFd, data);
+}
+
+
+function visitor(node) {
 
     // Skip if node is null
     if (!node) {
@@ -20,7 +43,9 @@ function visitor(node, context) {
     }
 
     // Log current node
-    console.log(node.type);
+    // console.log(_.repeat(' ', context.path.length * 2), node.valueOf());
+
+    context.path.unshift(node.type);
 
     // Scan node
     switch (node.type) {
@@ -31,6 +56,15 @@ function visitor(node, context) {
         case "BlockStatement":
         case "Program":
             visitor(node.body);
+            break;
+
+        case "AssignmentExpression":
+            visitor(node.left);
+            visitor(node.right);
+            break;
+
+        case "ExpressionStatement":
+            visitor(node.expression);
             break;
 
         case "VariableDeclaration":
@@ -57,6 +91,25 @@ function visitor(node, context) {
             visitor(node.body);
             break;
 
+        case "BinaryExpression":
+            visitor(node.left);
+            visitor(node.right);
+            break;
+
+        case "Identifier":
+            break;
+
+        case "ConditionalExpression":
+            visitor(node.test);
+            visitor(node.consequent);
+            visitor(node.alternate);
+            break;
+
+        case "MemberExpression":
+            visitor(node.object);
+            visitor(node.property);
+            break;
+
         case "Property":
             var name;
 
@@ -71,19 +124,18 @@ function visitor(node, context) {
 
                 default:
                     console.log('Invalid key in', node);
-                    return;
             }
 
-            if (name !== 'render') {
-                return;
+            if (name === 'render') {
+                visitor(node.value);
             }
 
-            visitor(node.value);
             break;
 
         case "Literal":
-            if (node.raw) {
-                fs.writeSync(outputFd, node.raw);
+            // Write Literal only if inside JSXElement block
+            if (_.includes(context.path, "JSXElement") && node.raw) {
+                write(_.trim(node.raw));
             }
 
             if (node.value && node.value.type) {
@@ -96,23 +148,28 @@ function visitor(node, context) {
         // --------------------------------------------------------------------
 
         case "JSXOpeningElement":
-            fs.writeSync(outputFd, '<' + node.name.name);
+            write('<' + node.name.name);
             visitor(node.attributes);
             break;
 
         case "JSXElement":
-            console.log(node);
             visitor(node.openingElement);
-            fs.writeSync(outputFd, '>');
+            write('>');
+
+            context.indent += 4;
+            writeNewline();
             visitor(node.children);
+            context.indent -= 4;
+            writeNewline();
+
             visitor(node.closingElement);
             break;
 
         case "JSXAttribute":
-            fs.writeSync(outputFd, ' ' + node.name.name);
+            write(' ' + node.name.name);
 
             if (node.value) {
-                fs.writeSync(outputFd, '=');
+                write('=');
             }
 
             visitor(node.name);
@@ -122,8 +179,18 @@ function visitor(node, context) {
         case "JSXIdentifier":
             break;
 
+        case "JSXExpressionContainer":
+            write("{%");
+            visitor(node.expression);
+            write("%}");
+            break;
+
         case "JSXClosingElement":
-            fs.writeSync(outputFd, '</' + node.name.name + '>');
+            write('</' + node.name.name + '>');
+            break;
+
+        case "ArrowFunctionExpression":
+            visitor(node.body);
             break;
 
         // --------------------------------------------------------------------
@@ -132,8 +199,9 @@ function visitor(node, context) {
 
         default:
             console.log('Unknonw node:\n', node);
-            return;
     }
+
+    context.path.shift();
 }
 
 
