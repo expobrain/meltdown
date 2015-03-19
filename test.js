@@ -2,21 +2,22 @@ var fs = require('fs');
 var esprima = require('esprima-fb');
 var _ = require('lodash');
 
-var inputFile = fs.readFileSync('./tests/sample.jsx');
+var inputFile = fs.readFileSync('./samples/sample.jsx');
 var outputFd = fs.openSync('./tests/sample.html', 'w');
 
 var ast = esprima.parse(inputFile);
 
 // Dump AST into JSON
-var stringify = require('./tests/stringify');
-var dumpFd = fs.openSync('./tests/ast.json', 'w');
+// var stringify = require('./tests/stringify');
+// var dumpFd = fs.openSync('./tests/ast.json', 'w');
 
-fs.writeSync(dumpFd, stringify(ast));
-fs.closeSync(dumpFd);
+// fs.writeSync(dumpFd, stringify(ast));
+// fs.closeSync(dumpFd);
 
 var context = {
     path: [],
-    indent: 0
+    indent: 0,
+    renderTo: 'React'
 };
 
 
@@ -28,6 +29,49 @@ function writeNewline() {
 function write(data) {
     fs.writeSync(outputFd, data);
 }
+
+
+function annotate(node) {
+    switch (node.type) {
+        case 'BlockStatement':
+            node.writePreamble = function (context)  {
+                if (context.renderTo === 'React') {
+                    write('{');
+                };
+            }
+            node.writeEpilogue = function (context)  {
+                if (context.renderTo === 'React') {
+                    write('}');
+                };
+            }
+            node.writeNewline = function (context)  {
+                if (context.renderTo === 'React') {
+                    write(';');
+                };
+            }
+            break;
+
+        case "JSXAttribute":
+            node.writeAttribute = function (context) {
+                write(' ' + node.name.name);
+
+                if (node.value) {
+                    write('=');
+                }
+            };
+            break;
+
+        case "JSXExpressionContainer":
+            node.writePreamble = function (context) {
+                case (context.renderTo) {
+                    case "React":
+                        write('{{')
+                }
+                write("{% ");
+                write(" %}");
+            break;
+    };
+};
 
 
 function visitor(node) {
@@ -46,6 +90,7 @@ function visitor(node) {
     // console.log(_.repeat(' ', context.path.length * 2), node.valueOf());
 
     context.path.unshift(node.type);
+    annotate(node);
 
     // Scan node
     switch (node.type) {
@@ -54,6 +99,16 @@ function visitor(node) {
         // --------------------------------------------------------------------
 
         case "BlockStatement":
+            node.writePreamble(context);
+
+            _.forEach(node.body, function (child) {
+                visitor(child);
+                node.writeNewline(context);
+            });
+
+            node.writeEpilogue(context);
+            break;
+
         case "Program":
             visitor(node.body);
             break;
@@ -75,8 +130,15 @@ function visitor(node) {
             visitor(node.init);
             break;
 
+        case "ThisExpression":
+            write('this');
+            break;
+
         case "CallExpression":
+            visitor(node.callee);
+            write('(')
             visitor(node.arguments);
+            write(')');
             break;
 
         case "ObjectExpression":
@@ -97,6 +159,9 @@ function visitor(node) {
             break;
 
         case "Identifier":
+            if (context.renderTo) {
+                write(node.name);
+            }
             break;
 
         case "ConditionalExpression":
@@ -107,6 +172,7 @@ function visitor(node) {
 
         case "MemberExpression":
             visitor(node.object);
+            write('.');
             visitor(node.property);
             break;
 
@@ -166,11 +232,7 @@ function visitor(node) {
             break;
 
         case "JSXAttribute":
-            write(' ' + node.name.name);
-
-            if (node.value) {
-                write('=');
-            }
+            node.writeAttribute();
 
             visitor(node.name);
             visitor(node.value);
@@ -180,9 +242,9 @@ function visitor(node) {
             break;
 
         case "JSXExpressionContainer":
-            write("{%");
+            write("{% ");
             visitor(node.expression);
-            write("%}");
+            write(" %}");
             break;
 
         case "JSXClosingElement":
@@ -190,6 +252,9 @@ function visitor(node) {
             break;
 
         case "ArrowFunctionExpression":
+            if (context.renderTo === 'React') {
+                write('()=> ');
+            }
             visitor(node.body);
             break;
 

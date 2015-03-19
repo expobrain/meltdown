@@ -1,8 +1,3 @@
-var React = require('react');
-var ListStore = require('../stores/ListStore');
-var AppActionCreator = require('../actions/AppActionCreator');
-var IntlMixin = require('react-intl').IntlMixin;
-var FormattedDate = require('react-intl').FormattedDate;
 var PlListComponent = React.createClass({
   getInitialState() {
     return this.getStateFromStore();
@@ -14,14 +9,16 @@ var PlListComponent = React.createClass({
     ListStore.removeChangeListener(this._onChange);
   },
   mixins: [IntlMixin],
+
   render() {
+    var a=42;
     return (
       <div className="tab-content  ">
         <table className="table table-bordered table-striped ">
           <thead>
             <tr>
               <th className="property-col" onClick={()=> {
-                AppActionCreator.sortByIndex(0);
+                AppActionCreator.sortByIndex(a);
               }}>&#x256A;  Property</th>
               <th className="price-col"  onClick={()=> {
                 AppActionCreator.sortByIndex(1);
