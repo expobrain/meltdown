@@ -2,6 +2,6 @@
 // -*- mode: js -*-
 'use strict';
 
-require('../src/main').transform(
+require('../main').transform(
     './tests/samples/HelloMessage.js', './tests/output/HelloMessage.html'
 );

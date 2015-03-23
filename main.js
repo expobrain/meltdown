@@ -3,6 +3,8 @@
 var fs = require('fs');
 var esprima = require('esprima-fb');
 var _ = require('lodash');
+var annotate = require('./lib/annotator').annotate;
+
 
 module.exports = {
     transform: function (input, output) {
@@ -12,75 +14,20 @@ module.exports = {
         var ast = esprima.parse(inputFile);
 
         // Dump AST into JSON
-        // var stringify = require('./tests/stringify');
-        // var dumpFd = fs.openSync('./tests/ast.json', 'w');
+        var stringify = require('./tests/stringify');
+        var dumpFd = fs.openSync(output + '.ast.json', 'w');
 
-        // fs.writeSync(dumpFd, stringify(ast));
-        // fs.closeSync(dumpFd);
+        fs.writeSync(dumpFd, stringify(ast));
+        fs.closeSync(dumpFd);
 
         var context = {
             path: [],
             indent: 0,
-            renderTo: 'React'
+            renderTo: 'React',
+            outputFd: outputFd
         };
 
-
-        function writeNewline() {
-            write('\n' + _.repeat(' ', context.indent));
-        }
-
-
-        function write(data) {
-            fs.writeSync(outputFd, data);
-        }
-
-
-        function annotate(node) {
-            switch (node.type) {
-                case 'BlockStatement':
-                    node.writePreamble = function (context)  {
-                        if (context.renderTo === 'React') {
-                            write('{');
-                        }
-                    };
-                    node.writeEpilogue = function (context)  {
-                        if (context.renderTo === 'React') {
-                            write('}');
-                        }
-                    };
-                    node.writeNewline = function (context)  {
-                        if (context.renderTo === 'React') {
-                            write(';');
-                        }
-                    };
-                    break;
-
-                case "JSXAttribute":
-                    node.writeAttribute = function (context) {
-                        write(' ' + node.name.name);
-
-                        if (node.value) {
-                            write('=');
-                        }
-                    };
-                    break;
-
-                case "JSXExpressionContainer":
-                    node.writePreamble = function (context) {
-                        switch (context.renderTo) {
-                            case "React":
-                                write('{{');
-                        }
-                        write("{% ");
-                        write(" %}");
-                    };
-                    break;
-            }
-        }
-
-
         function visitor(node) {
-
             // Skip if node is null
             if (!node) {
                 return;
@@ -95,7 +42,7 @@ module.exports = {
             // console.log(_.repeat(' ', context.path.length * 2), node.valueOf());
 
             context.path.unshift(node.type);
-            annotate(node);
+            annotate(node, context);
 
             // Scan node
             switch (node.type) {
@@ -108,7 +55,6 @@ module.exports = {
 
                     _.forEach(node.body, function (child) {
                         visitor(child);
-                        node.writeNewline(context);
                     });
 
                     node.writeEpilogue(context);
@@ -136,14 +82,16 @@ module.exports = {
                     break;
 
                 case "ThisExpression":
-                    write('this');
+                    node.write(context);
                     break;
 
                 case "CallExpression":
                     visitor(node.callee);
-                    write('(');
+                    node.writePreamble(context);
+
                     visitor(node.arguments);
-                    write(')');
+                    node.writeEpilogue(context);
+
                     break;
 
                 case "ObjectExpression":
@@ -164,9 +112,7 @@ module.exports = {
                     break;
 
                 case "Identifier":
-                    if (context.renderTo) {
-                        write(node.name);
-                    }
+                    node.write(context);
                     break;
 
                 case "ConditionalExpression":
@@ -177,7 +123,7 @@ module.exports = {
 
                 case "MemberExpression":
                     visitor(node.object);
-                    write('.');
+                    node.write(context);
                     visitor(node.property);
                     break;
 
@@ -204,14 +150,12 @@ module.exports = {
                     break;
 
                 case "Literal":
-                    // Write Literal only if inside JSXElement block
-                    if (_.includes(context.path, "JSXElement") && node.raw) {
-                        write(_.trim(node.raw));
-                    }
+                    node.write(context);
 
                     if (node.value && node.value.type) {
                         visitor(node.value);
                     }
+
                     break;
 
                 // --------------------------------------------------------------------
@@ -219,25 +163,18 @@ module.exports = {
                 // --------------------------------------------------------------------
 
                 case "JSXOpeningElement":
-                    write('<' + node.name.name);
+                    node.write(context);
                     visitor(node.attributes);
                     break;
 
                 case "JSXElement":
                     visitor(node.openingElement);
-                    write('>');
-
-                    context.indent += 4;
-                    writeNewline();
-                    visitor(node.children);
-                    context.indent -= 4;
-                    writeNewline();
-
+                    node.write(context);
                     visitor(node.closingElement);
                     break;
 
                 case "JSXAttribute":
-                    node.writeAttribute();
+                    node.write(context);
 
                     visitor(node.name);
                     visitor(node.value);
@@ -247,19 +184,16 @@ module.exports = {
                     break;
 
                 case "JSXExpressionContainer":
-                    write("{% ");
+                    node.writePreamble(context);
                     visitor(node.expression);
-                    write(" %}");
+                    node.writeEpilogue(context);
                     break;
 
                 case "JSXClosingElement":
-                    write('</' + node.name.name + '>');
+                    node.write(context);
                     break;
 
                 case "ArrowFunctionExpression":
-                    if (context.renderTo === 'React') {
-                        write('()=> ');
-                    }
                     visitor(node.body);
                     break;
 
