@@ -1,0 +1,7 @@
+#!/usr/bin/env node
+// -*- mode: js -*-
+'use strict';
+
+require('../src/main').transform(
+    './tests/samples/HelloMessage.js', './tests/output/HelloMessage.html'
+);
