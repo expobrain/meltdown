@@ -5,6 +5,7 @@ var esprima = require('esprima-fb');
 var _ = require('lodash');
 
 var visitor = require('./lib/visitor');
+var stringify = require('./lib/stringify');
 
 
 module.exports = {
@@ -13,14 +14,16 @@ module.exports = {
         var outputFd = fs.openSync(output, 'w');
 
         var ast = esprima.parse(inputFile);
+        var output = visitor.traverse(ast);
+    },
 
+    ast: function (inputFile, outputFile) {
         // Dump AST into JSON
-        var stringify = require('./lib/stringify');
-        var dumpFd = fs.openSync(output + '.ast.json', 'w');
+        var data = fs.readFileSync(inputFile);
+        var outputFd = fs.openSync(outputFile, 'w');
 
-        fs.writeSync(dumpFd, stringify(ast));
-        fs.closeSync(dumpFd);
+        var ast = esprima.parse(data);
 
-        visitor.traverse(ast, outputFd);
+        fs.writeSync(outputFd, stringify(ast));
     }
 };
