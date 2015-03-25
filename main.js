@@ -9,7 +9,7 @@ var stringify = require('./lib/stringify');
 
 
 module.exports = {
-    transform: function (input, output) {
+    compile: function (input, output) {
         var inputFile = fs.readFileSync(input);
         var outputFd = fs.openSync(output, 'w');
 
