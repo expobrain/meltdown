@@ -15,7 +15,7 @@
     "gulp-notify": "~2.2.0",
     "gulp-plumber": "~1.0.0",
     "gulp-shell": "~0.4.0",
-    "lodash": "~3.4.0",
+    "lodash": "~3.6.0",
     "mocha": "~2.2.1",
     "react": "~0.13.0",
     "should": "~5.2.0"
