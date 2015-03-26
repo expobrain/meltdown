@@ -1,22 +1,28 @@
-var _       = require('lodash');
-    assert  = require("assert");
-    esprima = require('esprima-fb');
-    should  = require('should');
+'use strict';
 
-    preprocessor = require("../lib/preprocessor"),
-    utils        = require('../lib/utils');
+var _       = require('lodash'),
+    esprima = require('esprima-fb'),
+    should  = require('should'),
+
+    parser = require("../lib/parser"),
+    utils  = require('../lib/utils');
 
 
 describe('Preprocess', function () {
     function parse(code) {
-        return preprocessor.annotate(esprima.parse(code));
+        return parser.annotate(esprima.parse(code));
     }
+
+    describe('#filterReactClass', function () {
+        it('includes React.class()', function () {
+        });
+    });
 
     describe('#filterReactClass', function () {
         it('includes React.class()', function () {
             // Pre-process AST
             var expected = parse('var myClass = React.createClass({});');
-            var ast = preprocessor.filterReactCreateClass(
+            var ast = parser.filterReactCreateClass(
                 parse('var myClass = React.createClass({});')
             );
 
@@ -26,7 +32,7 @@ describe('Preprocess', function () {
 
         it('drops anything else except React.createClass()', function () {
             // Pre-process AST
-            var ast = preprocessor.filterReactCreateClass(
+            var ast = parser.filterReactCreateClass(
                 parse(
                     'React.render();' +
                     'var a = 42;' +
@@ -43,7 +49,7 @@ describe('Preprocess', function () {
         it('throw exception if AST root node is not Program', function () {
             // Not a Program
             (function () {
-                preprocessor.filterReactCreateClass({
+                parser.filterReactCreateClass({
                     type: 'BlockStatement',
                     body: []
                 });
@@ -51,7 +57,7 @@ describe('Preprocess', function () {
 
             // Null root
             (function () {
-                preprocessor.filterReactCreateClass();
+                parser.filterReactCreateClass();
             }).should.throw();
         });
     });
@@ -69,7 +75,7 @@ describe('Preprocess', function () {
             utils.forEachNode(nodes, function (node) {
                 _.isFunction(node.children).should.be.true;
                 node.children.should.be.Function;
-            })
+            });
 
             return ast;
         });
