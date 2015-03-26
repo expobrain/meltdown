@@ -3,7 +3,8 @@ var _       = require('lodash');
     esprima = require('esprima-fb');
     should  = require('should');
 
-    preprocessor = require("../lib/preprocessor");
+    preprocessor = require("../lib/preprocessor"),
+    utils        = require('../lib/utils');
 
 
 describe('Preprocess', function () {
@@ -15,7 +16,9 @@ describe('Preprocess', function () {
         it('includes React.class()', function () {
             // Pre-process AST
             var expected = parse('var myClass = React.createClass({});');
-            var ast = preprocessor.filterReactCreateClass(expected);
+            var ast = preprocessor.filterReactCreateClass(
+                parse('var myClass = React.createClass({});')
+            );
 
             // Check
             ast.should.eql(expected);
@@ -27,6 +30,7 @@ describe('Preprocess', function () {
                 parse(
                     'React.render();' +
                     'var a = 42;' +
+                    'React.render({});' +
                     'var myClass = React.createClass({});'
                 )
             );
@@ -34,6 +38,21 @@ describe('Preprocess', function () {
 
             // Check
             ast.should.eql(expected);
+        });
+
+        it('throw exception if AST root node is not Program', function () {
+            // Not a Program
+            (function () {
+                preprocessor.filterReactCreateClass({
+                    type: 'BlockStatement',
+                    body: []
+                });
+            }).should.throw();
+
+            // Null root
+            (function () {
+                preprocessor.filterReactCreateClass();
+            }).should.throw();
         });
     });
 
@@ -43,17 +62,14 @@ describe('Preprocess', function () {
                 node,
                 nodes = [];
 
+
             ast = parse('var myClass = React.createClass({});');
             nodes = [ast];
 
-            while (nodes.length) {
-                node = nodes.pop();
-
+            utils.forEachNode(nodes, function (node) {
                 _.isFunction(node.children).should.be.true;
                 node.children.should.be.Function;
-
-                nodes.concat(node.children());
-            }
+            })
 
             return ast;
         });
