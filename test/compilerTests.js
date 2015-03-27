@@ -1,9 +1,10 @@
 'use strict';
 
-var should = require('should'),
-
-    parser   = require("../lib/parser"),
-    compiler = require("../lib/compiler");
+var should    = require('should'),
+    debug     = require('debug')('test'),
+    stringify = require('../lib/stringify'),
+    parser    = require("../lib/parser"),
+    compiler  = require("../lib/compiler");
 
 
 describe('Compiler', function () {
@@ -18,6 +19,8 @@ describe('Compiler', function () {
                 '});'
             );
 
+            debug(stringify(ast));
+
             compiler.compile(ast).should.equal(expected);
         });
 
@@ -31,7 +34,7 @@ describe('Compiler', function () {
                 '});'
             );
 
-            //compiler.compile(ast).should.equal(expected);
+            compiler.compile(ast).should.equal(expected);
         });
     });
 });

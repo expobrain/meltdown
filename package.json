@@ -9,6 +9,7 @@
     "meltdown": "./bin/meltdown"
   },
   "devDependencies": {
+    "debug": "~2.1.3",
     "esprima-fb": "~13001.1001.0-dev-harmony-fb",
     "gulp": "~3.8.11",
     "gulp-mocha": "~2.0.0",
