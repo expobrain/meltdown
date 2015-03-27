@@ -63,7 +63,7 @@ describe('Preprocess', function () {
     });
 
     describe('#annotate', function () {
-        it('annotates all the nodes with children() method', function () {
+        it('annotates all the nodes with getChildren() method', function () {
             var ast,
                 node,
                 nodes = [];
@@ -73,8 +73,8 @@ describe('Preprocess', function () {
             nodes = [ast];
 
             utils.forEachNode(nodes, function (node) {
-                _.isFunction(node.children).should.be.true;
-                node.children.should.be.Function;
+                _.isFunction(node.getChildren).should.be.true;
+                node.getChildren.should.be.Function;
             });
 
             return ast;
