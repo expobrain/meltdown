@@ -72,7 +72,7 @@ describe('Preprocess', function () {
             ast = parse('var myClass = React.createClass({});');
             nodes = [ast];
 
-            utils.forEachNode(nodes, function (node) {
+            utils.traverseTree(nodes, function (node) {
                 _.isFunction(node.getChildren).should.be.true;
                 node.getChildren.should.be.Function;
             });
