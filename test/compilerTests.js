@@ -9,14 +9,29 @@ var should    = require('should'),
 
 describe('Compiler', function () {
     describe('#compile', function () {
-        it('translate simple HTML', function () {
+        it('compile simple HTML', function () {
             var expected = '<div>Hello</div>';
             var ast = parser.parse(
-                'var HelloMessage = React.createClass({' +
+                'var Hello = React.createClass({' +
                 '  render: function() {' +
                 '    return <div>Hello</div>;' +
                 '  }' +
-                '});'
+                '});' +
+                'module.exports.Hello = Hello;'
+            );
+
+            compiler.compile(ast).should.equal(expected);
+        });
+
+        it('compile HTML with simple variables', function () {
+            var expected = '<div>Hello {{props.name}}</div>';
+            var ast = parser.parse(
+                'var Hello = React.createClass({' +
+                '  render: function() {' +
+                '    return <div>Hello {this.props.name}</div>;' +
+                '  }' +
+                '});' +
+                'module.exports.Hello = Hello;'
             );
 
             debug(stringify(ast));
@@ -24,12 +39,34 @@ describe('Compiler', function () {
             compiler.compile(ast).should.equal(expected);
         });
 
-        it('translate HTML with variables', function () {
-            var expected = '<div>Hello {{props.name}}</div>';
+        it('skip compile simple HTML if not exported', function () {
+            var expected = '';
             var ast = parser.parse(
-                'var HelloMessage = React.createClass({' +
+                'var Hello = React.createClass({' +
                 '  render: function() {' +
-                '    return <div>Hello {this.props.name}</div>;' +
+                '    return <div>Hello</div>;' +
+                '  }' +
+                '});'
+            );
+
+            compiler.compile(ast).should.equal(expected);
+        });
+
+        xit('compile simple template', function () {
+            var expected = '<div></div>';
+            var ast = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <Panel></Panel>' +
+                '    );' +
                 '  }' +
                 '});'
             );

@@ -1,22 +1,18 @@
 'use strict';
 
-var _       = require('lodash'),
-    esprima = require('esprima-fb'),
-    should  = require('should'),
-
-    parser = require("../lib/parser"),
-    utils  = require('../lib/utils');
+var _         = require('lodash'),
+    esprima   = require('esprima-fb'),
+    should    = require('should'),
+    debug     = require('debug')('test'),
+    stringify = require('../lib/stringify'),
+    parser    = require("../lib/parser"),
+    utils     = require('../lib/utils');
 
 
 describe('Preprocess', function () {
     function parse(code) {
         return parser.annotate(esprima.parse(code));
     }
-
-    describe('#filterReactClass', function () {
-        it('includes React.class()', function () {
-        });
-    });
 
     describe('#filterReactClass', function () {
         it('includes React.class()', function () {
@@ -64,20 +60,40 @@ describe('Preprocess', function () {
 
     describe('#annotate', function () {
         it('annotates all the nodes with getChildren() method', function () {
-            var ast,
+            var ast = parse('var myClass = React.createClass({});'),
                 node,
-                nodes = [];
-
-
-            ast = parse('var myClass = React.createClass({});');
-            nodes = [ast];
+                nodes = [ast];
 
             utils.traverseTree(nodes, function (node) {
                 _.isFunction(node.getChildren).should.be.true;
-                node.getChildren.should.be.Function;
             });
+        });
 
-            return ast;
+        it('annotates all the nodes with compile() method', function () {
+            var ast = parse('var myClass = React.createClass({});'),
+                node,
+                nodes = [ast];
+
+            utils.traverseTree(nodes, function (node) {
+                _.isFunction(node.compile).should.be.true;
+            });
+        });
+    });
+
+    describe('#filterModuleExports', function () {
+        it('by settings exports attribute', function () {
+            var expected = [{
+                exports: 'myClass',
+                symbol: 'MyClass'
+            }];
+            var ast = parse(
+                'var MyClass = React.createClass({});' +
+                'module.exports.myClass = MyClass;'
+            );
+
+            debug(stringify(ast));
+
+            parser.filterModuleExports(ast).should.be.eql(expected);
         });
     });
 });
