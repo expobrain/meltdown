@@ -83,15 +83,13 @@ describe('Preprocess', function () {
     describe('#filterModuleExports', function () {
         it('by settings exports attribute', function () {
             var expected = [{
-                exports: 'myClass',
+                name: 'myClass',
                 symbol: 'MyClass'
             }];
             var ast = parse(
                 'var MyClass = React.createClass({});' +
                 'module.exports.myClass = MyClass;'
             );
-
-            debug(stringify(ast));
 
             parser.filterModuleExports(ast).should.be.eql(expected);
         });
