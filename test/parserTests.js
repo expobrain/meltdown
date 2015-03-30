@@ -78,7 +78,7 @@ describe('Preprocessors', function () {
     });
 
     describe('#inlineComponents', function () {
-        it('simple inline with empty children', function () {
+        it('simple inline without children', function () {
             var expected = parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
@@ -93,10 +93,10 @@ describe('Preprocessors', function () {
                 '      <div></div>' +
                 '    );' +
                 '  }' +
-                '});'+
-                'module.exports.Component = Component;'
+                '});' +
+                'module.exports.Component = Component'
             );
-            var ast = parser.parse(
+            var frame = parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
@@ -110,11 +110,64 @@ describe('Preprocessors', function () {
                 '      <Panel></Panel>' +
                 '    );' +
                 '  }' +
-                '});'+
-                'module.exports.Component = Component;'
+                '});' +
+                'module.exports.Component = Component'
             );
 
-            parser.inlineComponents(ast).should.be.eql(expected);
+            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
+        });
+
+        it('nested inline without children', function () {
+            var expected = parser.parse(
+                'var Parent = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Child = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <p></p>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div><p></p></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports.Component = Component'
+            );
+            var frame = parser.parse(
+                'var Parent = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Child = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <p></p>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <Parent><Child></Child></Parent>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports.Component = Component'
+            );
+
+            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
         });
     });
 });
