@@ -117,6 +117,51 @@ describe('Preprocessors', function () {
             parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
         });
 
+        it('simple inline with children', function () {
+            var expected = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div>' +
+                '        <p>{this.props.children}</p>' +
+                '      </div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div>' +
+                '        <p>Hello</p>' +
+                '      </div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports.Component = Component'
+            );
+            var frame = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div>' +
+                '        <p>{this.props.children}</p>' +
+                '      </div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <Panel>Hello</Panel>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports.Component = Component'
+            );
+
+            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
+        });
+
         it('nested inline without children', function () {
             var expected = parser.parse(
                 'var Parent = React.createClass({' +
@@ -136,7 +181,7 @@ describe('Preprocessors', function () {
                 'var Component = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
-                '      <div><p></p></div>' +
+                '      <div></div>' +
                 '    );' +
                 '  }' +
                 '});' +
