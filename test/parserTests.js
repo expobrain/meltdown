@@ -94,4 +94,45 @@ describe('Preprocess', function () {
             parser.filterModuleExports(ast).should.be.eql(expected);
         });
     });
+
+    describe('#inlineComponents', function () {
+        it('simple inline with empty children', function () {
+            var expected = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});'+
+                'module.exports.Component = Component;'
+            );
+            var ast = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <Panel></Panel>' +
+                '    );' +
+                '  }' +
+                '});'+
+                'module.exports.Component = Component;'
+            );
+
+            parser.inlineComponents(ast).should.be.eql(expected);
+        });
+    });
 });

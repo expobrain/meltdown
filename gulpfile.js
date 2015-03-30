@@ -9,7 +9,7 @@ var gulp    = require('gulp'),
 // ############################################################################
 
 gulp.task('watch', function() {
-    gulp.watch('./**/*.js', ['mocha']);
+    gulp.watch('./**/*.js', {interval: 500}, ['mocha']);
 });
 
 gulp.task('mocha:shell', shell.task([
