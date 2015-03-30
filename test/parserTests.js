@@ -1,48 +1,30 @@
 'use strict';
 
-var _         = require('lodash'),
-    esprima   = require('esprima-fb'),
-    should    = require('should'),
-    debug     = require('debug')('test'),
+var _       = require('lodash'),
+    esprima = require('esprima-fb'),
+    should  = require('should'),
+    debug   = require('debug')('test'),
+
     stringify = require('../lib/stringify'),
     parser    = require("../lib/parser"),
     utils     = require('../lib/utils');
 
 
-describe('Preprocess', function () {
+describe('Preprocessors', function () {
     function parse(code) {
-        return parser.annotate(esprima.parse(code));
+        return parser.annotate({
+            ast: esprima.parse(code)
+        });
     }
 
-    describe('#filterReactClass', function () {
-        it('includes React.class()', function () {
-            // Pre-process AST
-            var expected = parse('var myClass = React.createClass({});');
-            var ast = parser.filterReactCreateClass(
-                parse('var myClass = React.createClass({});')
-            );
+    it('throw exception if AST root node is not Program', function () {
+        var preprocessors = [
+            parser.filterModuleExports,
+            parser.filterSymbols,
+            parser.inlineComponents
+        ];
 
-            // Check
-            ast.should.eql(expected);
-        });
-
-        it('drops anything else except React.createClass()', function () {
-            // Pre-process AST
-            var ast = parser.filterReactCreateClass(
-                parse(
-                    'React.render();' +
-                    'var a = 42;' +
-                    'React.render({});' +
-                    'var myClass = React.createClass({});'
-                )
-            );
-            var expected = parse('var myClass = React.createClass({});');
-
-            // Check
-            ast.should.eql(expected);
-        });
-
-        it('throw exception if AST root node is not Program', function () {
+        _.forEach(preprocessors, function (preprocessor) {
             // Not a Program
             (function () {
                 parser.filterReactCreateClass({
@@ -60,9 +42,9 @@ describe('Preprocess', function () {
 
     describe('#annotate', function () {
         it('annotates all the nodes with getChildren() method', function () {
-            var ast = parse('var myClass = React.createClass({});'),
+            var frame = parse('var myClass = React.createClass({});'),
                 node,
-                nodes = [ast];
+                nodes = [frame.ast];
 
             utils.traverseTree(nodes, function (node) {
                 _.isFunction(node.getChildren).should.be.true;
@@ -70,9 +52,9 @@ describe('Preprocess', function () {
         });
 
         it('annotates all the nodes with compile() method', function () {
-            var ast = parse('var myClass = React.createClass({});'),
+            var frame = parse('var myClass = React.createClass({});'),
                 node,
-                nodes = [ast];
+                nodes = [frame.ast];
 
             utils.traverseTree(nodes, function (node) {
                 _.isFunction(node.compile).should.be.true;
@@ -86,12 +68,12 @@ describe('Preprocess', function () {
                 name: 'myClass',
                 symbol: 'MyClass'
             }];
-            var ast = parse(
+            var frame = parse(
                 'var MyClass = React.createClass({});' +
                 'module.exports.myClass = MyClass;'
             );
 
-            parser.filterModuleExports(ast).should.be.eql(expected);
+            parser.filterModuleExports(frame).exports.should.be.eql(expected);
         });
     });
 

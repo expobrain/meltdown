@@ -54,7 +54,7 @@ describe('Compiler', function () {
             compiler.compile(ast).should.eql(expected);
         });
 
-        xit('compile simple template', function () {
+        it('compile simple template', function () {
             var expected = {
                 Component: '<div></div>'
             };
