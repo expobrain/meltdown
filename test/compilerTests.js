@@ -13,7 +13,7 @@ describe('Compiler', function () {
             var expected = {
                 'Hello': '<div>Hello</div>'
             };
-            var ast = parser.parse(
+            var frame = parser.parse(
                 'var Hello = React.createClass({' +
                 '  render: function() {' +
                 '    return <div>Hello</div>;' +
@@ -22,7 +22,7 @@ describe('Compiler', function () {
                 'module.exports.Hello = Hello;'
             );
 
-            compiler.compile(ast).should.eql(expected);
+            compiler.compile(frame).should.eql(expected);
         });
 
         it('compile HTML with simple variables', function () {
@@ -73,7 +73,7 @@ describe('Compiler', function () {
                 '    );' +
                 '  }' +
                 '});'+
-                'module.exports.Compoent = Component;'
+                'module.exports.Component = Component;'
             );
 
             compiler.compile(ast).should.eql(expected);
