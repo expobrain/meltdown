@@ -64,13 +64,10 @@ describe('Preprocessors', function () {
 
     describe('#filterModuleExports', function () {
         it('by settings exports attribute', function () {
-            var expected = [{
-                name: 'myClass',
-                symbol: 'MyClass'
-            }];
+            var expected = ['MyClass'];
             var frame = parse(
                 'var MyClass = React.createClass({});' +
-                'module.exports.myClass = MyClass;'
+                'module.exports = MyClass;'
             );
 
             parser.filterModuleExports(frame).exports.should.be.eql(expected);
@@ -94,7 +91,7 @@ describe('Preprocessors', function () {
                 '    );' +
                 '  }' +
                 '});' +
-                'module.exports.Component = Component'
+                'module.exports = Component'
             );
             var frame = parser.parse(
                 'var Panel = React.createClass({' +
@@ -111,7 +108,7 @@ describe('Preprocessors', function () {
                 '    );' +
                 '  }' +
                 '});' +
-                'module.exports.Component = Component'
+                'module.exports = Component'
             );
 
             parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
@@ -137,7 +134,7 @@ describe('Preprocessors', function () {
                 '    );' +
                 '  }' +
                 '});' +
-                'module.exports.Component = Component'
+                'module.exports = Component'
             );
             var frame = parser.parse(
                 'var Panel = React.createClass({' +
@@ -156,7 +153,7 @@ describe('Preprocessors', function () {
                 '    );' +
                 '  }' +
                 '});' +
-                'module.exports.Component = Component'
+                'module.exports = Component'
             );
 
             parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
@@ -185,7 +182,7 @@ describe('Preprocessors', function () {
                 '    );' +
                 '  }' +
                 '});' +
-                'module.exports.Component = Component'
+                'module.exports = Component'
             );
             var frame = parser.parse(
                 'var Parent = React.createClass({' +
@@ -209,7 +206,7 @@ describe('Preprocessors', function () {
                 '    );' +
                 '  }' +
                 '});' +
-                'module.exports.Component = Component'
+                'module.exports = Component'
             );
 
             parser.inlineComponents(frame).ast.should.be.eql(expected.ast);

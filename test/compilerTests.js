@@ -19,7 +19,7 @@ describe('Compiler', function () {
                 '    return <div>Hello</div>;' +
                 '  }' +
                 '});' +
-                'module.exports.Hello = Hello;'
+                'module.exports = Hello;'
             );
 
             compiler.compile(frame).should.eql(expected);
@@ -35,7 +35,7 @@ describe('Compiler', function () {
                 '    return <div>Hello {this.props.name}</div>;' +
                 '  }' +
                 '});' +
-                'module.exports.Hello = Hello;'
+                'module.exports = Hello;'
             );
 
             compiler.compile(ast).should.eql(expected);
@@ -73,7 +73,7 @@ describe('Compiler', function () {
                 '    );' +
                 '  }' +
                 '});'+
-                'module.exports.Component = Component;'
+                'module.exports = Component;'
             );
 
             compiler.compile(ast).should.eql(expected);
