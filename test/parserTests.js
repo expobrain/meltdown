@@ -12,9 +12,9 @@ var _       = require('lodash'),
 
 describe('Preprocessors', function () {
     function parse(code) {
-        return parser.annotate({
+        return {
             ast: esprima.parse(code)
-        });
+        };
     }
 
     it('throw exception if AST root node is not Program', function () {
@@ -37,28 +37,6 @@ describe('Preprocessors', function () {
             (function () {
                 parser.filterReactCreateClass();
             }).should.throw();
-        });
-    });
-
-    describe('#annotate', function () {
-        it('annotates all the nodes with getChildren() method', function () {
-            var frame = parse('var myClass = React.createClass({});'),
-                node,
-                nodes = [frame.ast];
-
-            utils.traverseTree(nodes, function (node) {
-                _.isFunction(node.getChildren).should.be.true;
-            });
-        });
-
-        it('annotates all the nodes with compile() method', function () {
-            var frame = parse('var myClass = React.createClass({});'),
-                node,
-                nodes = [frame.ast];
-
-            utils.traverseTree(nodes, function (node) {
-                _.isFunction(node.compile).should.be.true;
-            });
         });
     });
 
