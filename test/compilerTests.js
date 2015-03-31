@@ -11,7 +11,7 @@ describe('Compiler', function () {
     describe('#compile', function () {
         it('compile simple HTML', function () {
             var expected = {
-                'Hello': '<div>Hello</div>'
+                Hello: '<div>Hello</div>'
             };
             var frame = parser.parse(
                 'var Hello = React.createClass({' +
@@ -29,7 +29,7 @@ describe('Compiler', function () {
             var expected = {
                 Hello: '<div>Hello {{props.name}}</div>'
             };
-            var ast = parser.parse(
+            var frame = parser.parse(
                 'var Hello = React.createClass({' +
                 '  render: function() {' +
                 '    return <div>Hello {this.props.name}</div>;' +
@@ -38,12 +38,12 @@ describe('Compiler', function () {
                 'module.exports = Hello;'
             );
 
-            compiler.compile(ast).should.eql(expected);
+            compiler.compile(frame).should.eql(expected);
         });
 
         it('skip compile simple HTML if not exported', function () {
             var expected = {};
-            var ast = parser.parse(
+            var frame = parser.parse(
                 'var Hello = React.createClass({' +
                 '  render: function() {' +
                 '    return <div>Hello</div>;' +
@@ -51,14 +51,14 @@ describe('Compiler', function () {
                 '});'
             );
 
-            compiler.compile(ast).should.eql(expected);
+            compiler.compile(frame).should.eql(expected);
         });
 
         it('compile simple template', function () {
             var expected = {
                 Component: '<div></div>'
             };
-            var ast = parser.parse(
+            var frame = parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
@@ -76,7 +76,7 @@ describe('Compiler', function () {
                 'module.exports = Component;'
             );
 
-            compiler.compile(ast).should.eql(expected);
+            compiler.compile(frame).should.eql(expected);
         });
     });
 });
