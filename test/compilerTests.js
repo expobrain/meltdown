@@ -136,5 +136,30 @@ describe('Compiler', function () {
 
             compiler.compile(frame).should.eql(expected);
         });
+
+        it('compile self-closing inline', function () {
+            var expected = {
+                Component: '<div></div>'
+            };
+            var frame = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <Panel/>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
     });
 });

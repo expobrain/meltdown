@@ -137,6 +137,100 @@ describe('Preprocessors', function () {
             parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
         });
 
+        it('multiple nested inlines with children', function () {
+            var expected = parser.parse(
+                'var Content = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <div className="content">' +
+                '            </div>' +
+                '        );' +
+                '    }' +
+                '});' +
+                // 'var ResultList = React.createClass({' +
+                // '    render: function () {' +
+                // '        return (' +
+                // '            <ol></ol>' +
+                // '        );' +
+                // '    }' +
+                // '});' +
+                // 'var Panel = React.createClass({' +
+                // '    render: function () {' +
+                // '        return (' +
+                // '            <div className="panel">{this.props.children}</div>' +
+                // '        );' +
+                // '    }' +
+                // '});' +
+                'var Header = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <header></header>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'var Page = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <div className="content">' +
+                '                <header></header>' +
+                // '                <div className="panel">' +
+                // '                    <ol></ol>' +
+                // '                </div>' +
+                '            </div>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'module.exports = Page;'
+            );
+            var frame = parser.parse(
+                'var Content = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <div className="content">' +
+                '            </div>' +
+                '        );' +
+                '    }' +
+                '});' +
+                // 'var ResultList = React.createClass({' +
+                // '    render: function () {' +
+                // '        return (' +
+                // '            <ol></ol>' +
+                // '        );' +
+                // '    }' +
+                // '});' +
+                // 'var Panel = React.createClass({' +
+                // '    render: function () {' +
+                // '        return (' +
+                // '            <div className="panel">' +
+                // '               {this.props.children}</div>' +
+                // '        );' +
+                // '    }' +
+                // '});' +
+                'var Header = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <header></header>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'var Page = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <Content>' +
+                '                <Header/>' +
+                // '                <Panel>' +
+                // '                    <ResultList/>' +
+                // '                </Panel>' +
+                '            </Content>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'module.exports = Page;'
+            );
+
+            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
+        });
+
         it('nested inline without children', function () {
             var expected = parser.parse(
                 'var Parent = React.createClass({' +
