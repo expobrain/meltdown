@@ -11,8 +11,32 @@ var _       = require('lodash'),
 
 
 describe('Preprocessors', function () {
+    function trimLiterals(frame) {
+        utils.traverseTree(frame.ast, function (node) {
+            if (node.type === "JSXElement") {
+                node.children = _.chain(node.children)
+                    .reduce(function (results, child) {
+                        if (child.type !== 'Literal' || !child.value.match(/^\s+/)) {
+                            results.push(child);
+                        }
+                        return results;
+                    }, [])
+                    .map(function (child) {
+                        if (child.type === 'Literal') {
+                            child.value = child.value.trim();
+                            child.raw = child.raw.trim();
+                        }
+                        return child;
+                    })
+                    .value();
+            }
+        });
+
+        return frame;
+    }
+
     function parse(code) {
-        return parser.collapseWhitespaces({
+        return trimLiterals({
             ast: esprima.parse(code)
         });
     }
@@ -183,7 +207,7 @@ describe('Preprocessors', function () {
                 '});' +
                 'module.exports = Page;'
             );
-            var frame = parser.parse(
+            var frame = trimLiterals(parser.parse(
                 'var Content = React.createClass({' +
                 '    render: function () {' +
                 '        return (' +
@@ -228,7 +252,7 @@ describe('Preprocessors', function () {
                 '    }' +
                 '});' +
                 'module.exports = Page;'
-            );
+            ));
 
             frame.ast.should.be.eql(expected.ast);
         });
