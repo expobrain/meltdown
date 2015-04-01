@@ -62,11 +62,11 @@ describe('Preprocessors', function () {
 
     describe('#filterModuleExports', function () {
         it('by settings exports attribute', function () {
-            var expected = ['MyClass'];
-            var frame = parse(
+            var expected = parse('React.createClass({});').ast.body[0].expression;
+            var frame = parser.filterSymbols(parse(
                 'var MyClass = React.createClass({});' +
                 'module.exports = MyClass;'
-            );
+            ));
 
             parser.filterModuleExports(frame).exports.should.be.eql(expected);
         });
@@ -134,7 +134,7 @@ describe('Preprocessors', function () {
                 '});' +
                 'module.exports = Component'
             );
-            var frame = parser.parse(
+            var frame = trimLiterals(parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
@@ -152,7 +152,7 @@ describe('Preprocessors', function () {
                 '  }' +
                 '});' +
                 'module.exports = Component'
-            );
+            ));
 
             frame.ast.should.be.eql(expected.ast);
         });

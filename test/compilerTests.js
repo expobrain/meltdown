@@ -12,9 +12,7 @@ var should  = require('should'),
 describe('Compiler', function () {
     describe('#compile', function () {
         it('compile simple HTML', function () {
-            var expected = {
-                Hello: '<div>Hello</div>'
-            };
+            var expected = '<div>Hello</div>';
             var frame = parser.parse(
                 'var Hello = React.createClass({' +
                 '  render: function() {' +
@@ -28,9 +26,7 @@ describe('Compiler', function () {
         });
 
         it('compile HTML with simple variables', function () {
-            var expected = {
-                Hello: '<div>Hello {{props.name}}</div>'
-            };
+            var expected = '<div>Hello {{props.name}}</div>';
             var frame = parser.parse(
                 'var Hello = React.createClass({' +
                 '  render: function() {' +
@@ -44,7 +40,7 @@ describe('Compiler', function () {
         });
 
         it('skip compile simple HTML if not exported', function () {
-            var expected = {};
+            var expected = '';
             var frame = parser.parse(
                 'var Hello = React.createClass({' +
                 '  render: function() {' +
@@ -57,9 +53,7 @@ describe('Compiler', function () {
         });
 
         it('compile simple template', function () {
-            var expected = {
-                Component: '<div></div>'
-            };
+            var expected = '<div></div>';
             var frame = parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
@@ -82,9 +76,7 @@ describe('Compiler', function () {
         });
 
         it('compile nested components without children', function () {
-            var expected = {
-                Component: '<div></div>'
-            };
+            var expected = '<div></div>';
             var frame = parser.parse(
                 'var Parent = React.createClass({' +
                 '  render: function () {' +
@@ -114,9 +106,7 @@ describe('Compiler', function () {
         });
 
         it('compile nested components with children', function () {
-            var expected = {
-                Component: '<div><p>Hello</p></div>'
-            };
+            var expected = '<div><p>Hello</p></div>';
             var frame = parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
@@ -139,9 +129,7 @@ describe('Compiler', function () {
         });
 
         it('compile self-closing inline', function () {
-            var expected = {
-                Component: '<div></div>'
-            };
+            var expected = '<div></div>';
             var frame = parser.parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
@@ -164,16 +152,14 @@ describe('Compiler', function () {
         });
 
         it('compile multiple inline components with children', function() {
-            var expected = {
-                Page: utils.minifyHtml(
-                    '<div className="content">' +
-                    '    <header></header>' +
-                    '    <div className="panel">' +
-                    '        <ol></ol>' +
-                    '    </div>' +
-                    '</div>'
-                )
-            };
+            var expected = utils.minifyHtml(
+                '<div className="content">' +
+                '    <header></header>' +
+                '    <div className="panel">' +
+                '        <ol></ol>' +
+                '    </div>' +
+                '</div>'
+            );
             var frame = parser.parse(
                 'var Content = React.createClass({' +
                 '    render: function () {' +
