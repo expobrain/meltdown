@@ -314,7 +314,25 @@ describe('Preprocessors', function () {
         it('loads code from external file', function () {
             var expected = parser.parse('var a = 42;');
             var frame = parser.parse(
-                'var a = require("./test/fixtures/require.test.jsx");'
+                'var a = require("./test/fixtures/require.test.js");'
+            );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+
+        it('loads code from external file: implicit .js extension', function () {
+            var expected = parser.parse('var a = 42;');
+            var frame = parser.parse(
+                'var a = require("./test/fixtures/require_js.test");'
+            );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+
+        it('loads code from external file: implicit .jsx extension', function () {
+            var expected = parser.parse('var a = 42;');
+            var frame = parser.parse(
+                'var a = require("./test/fixtures/require_jsx.test");'
             );
 
             frame.ast.should.be.eql(expected.ast);
