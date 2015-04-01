@@ -1,11 +1,12 @@
 'use strict';
 
-var should = require('should'),
-    debug  = require('debug')('test'),
+var should  = require('should'),
+    debug   = require('debug')('test'),
 
     stringify = require('../lib/stringify'),
     parser    = require("../lib/parser"),
-    compiler  = require("../lib/compiler");
+    compiler  = require("../lib/compiler"),
+    utils     = require("../lib/utils");
 
 
 describe('Compiler', function () {
@@ -157,6 +158,68 @@ describe('Compiler', function () {
                 '  }' +
                 '});' +
                 'module.exports = Component'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
+
+        it('compile multiple inline components with children', function() {
+            var expected = {
+                Page: utils.minifyHtml(
+                    '<div className="content">' +
+                    '    <header></header>' +
+                    '    <div className="panel">' +
+                    '        <ol></ol>' +
+                    '    </div>' +
+                    '</div>'
+                )
+            };
+            var frame = parser.parse(
+                'var Content = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <div className="content">' +
+                '               {this.props.children}' +
+                '            </div>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'var ResultList = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <ol></ol>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'var Panel = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <div className="panel">' +
+                '               {this.props.children}' +
+                '            </div>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'var Header = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <header></header>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'var Page = React.createClass({' +
+                '    render: function () {' +
+                '        return (' +
+                '            <Content>' +
+                '                <Header/>' +
+                '                <Panel>' +
+                '                    <ResultList/>' +
+                '                </Panel>' +
+                '            </Content>' +
+                '        );' +
+                '    }' +
+                '});' +
+                'module.exports = Page;'
             );
 
             compiler.compile(frame).should.eql(expected);

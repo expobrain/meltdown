@@ -10,20 +10,23 @@
   },
   "devDependencies": {
     "debug": "~2.1.3",
-    "esprima-fb": "~13001.1001.0-dev-harmony-fb",
     "gulp": "~3.8.11",
     "gulp-mocha": "~2.0.0",
     "gulp-notify": "~2.2.0",
     "gulp-plumber": "~1.0.0",
     "gulp-shell": "~0.4.0",
-    "lodash": "~3.6.0",
     "mocha": "~2.2.1",
-    "react": "~0.13.0",
     "should": "~5.2.0"
   },
   "files": [
     "main.js",
     "bin/meltdown",
     "lib/"
-  ]
+  ],
+  "dependencies": {
+    "esprima-fb": "~13001.1001.0-dev-harmony-fb",
+    "html-minifier": "~0.7.0",
+    "lodash": "~3.6.0",
+    "react": "~0.13.0"
+  }
 }

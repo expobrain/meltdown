@@ -74,7 +74,7 @@ describe('Preprocessors', function () {
 
     describe('#inlineComponents', function () {
         it('simple inline without children', function () {
-            var expected = parser.parse(
+            var expected = parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
@@ -109,11 +109,11 @@ describe('Preprocessors', function () {
                 'module.exports = Component'
             );
 
-            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
+            frame.ast.should.be.eql(expected.ast);
         });
 
         it('simple inline with children', function () {
-            var expected = parser.parse(
+            var expected = parse(
                 'var Panel = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
@@ -154,7 +154,7 @@ describe('Preprocessors', function () {
                 'module.exports = Component'
             );
 
-            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
+            frame.ast.should.be.eql(expected.ast);
         });
 
         it('multiple nested inlines with children', function () {
@@ -257,7 +257,7 @@ describe('Preprocessors', function () {
         });
 
         it('nested inline without children', function () {
-            var expected = parser.parse(
+            var expected = parse(
                 'var Parent = React.createClass({' +
                 '  render: function () {' +
                 '    return (' +
@@ -306,7 +306,7 @@ describe('Preprocessors', function () {
                 'module.exports = Component'
             );
 
-            parser.inlineComponents(frame).ast.should.be.eql(expected.ast);
+            frame.ast.should.be.eql(expected.ast);
         });
     });
 });
