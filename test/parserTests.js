@@ -309,4 +309,15 @@ describe('Preprocessors', function () {
             frame.ast.should.be.eql(expected.ast);
         });
     });
+
+    describe('#require', function () {
+        it('loads code from external file', function () {
+            var expected = parser.parse('var a = 42;');
+            var frame = parser.parse(
+                'var a = require("./test/fixtures/require.test.jsx");'
+            );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+    });
 });
