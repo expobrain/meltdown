@@ -8,7 +8,7 @@ var should = require('should'),
     compiler  = require("../lib/compiler");
 
 
-xdescribe('Compiler', function () {
+describe('Compiler', function () {
     describe('#compile', function () {
         it('compile simple HTML', function () {
             var expected = {
