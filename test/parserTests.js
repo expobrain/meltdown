@@ -314,7 +314,7 @@ describe('Preprocessors', function () {
         it('loads code from external file', function () {
             var expected = parser.parse('var a = 42;');
             var frame = parser.parse(
-                'var a = require("./test/fixtures/require.test.js");'
+                'var a = require("./test/fixtures/require_base.test");'
             );
 
             frame.ast.should.be.eql(expected.ast);
@@ -323,7 +323,7 @@ describe('Preprocessors', function () {
         it('loads code from external file: implicit .js extension', function () {
             var expected = parser.parse('var a = 42;');
             var frame = parser.parse(
-                'var a = require("./test/fixtures/require_js.test");'
+                'var a = require("./test/fixtures/require_base_js.test");'
             );
 
             frame.ast.should.be.eql(expected.ast);
@@ -332,7 +332,25 @@ describe('Preprocessors', function () {
         it('loads code from external file: implicit .jsx extension', function () {
             var expected = parser.parse('var a = 42;');
             var frame = parser.parse(
-                'var a = require("./test/fixtures/require_jsx.test");'
+                'var a = require("./test/fixtures/require_base_jsx.test");'
+            );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+
+        it('loads code with Node.js dependencies', function () {
+            var expected = parser.parse('var a = 42;');
+            var frame = parser.parse(
+                'var a = require("./test/fixtures/require_node.test");'
+            );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+
+        it('loads nested requires', function () {
+            var expected = parser.parse('var a = 42;');
+            var frame = parser.parse(
+                'var a = require("./test/fixtures/require_nested.test");'
             );
 
             frame.ast.should.be.eql(expected.ast);
