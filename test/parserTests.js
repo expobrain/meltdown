@@ -355,5 +355,17 @@ describe('Preprocessors', function () {
 
             frame.ast.should.be.eql(expected.ast);
         });
+
+        it('throw exception if export is not a symbol', function () {
+            var data = (
+                'var a = require("./test/fixtures/require_nosymbol.test");'
+            );
+
+            (function () {
+                parser.parse(data);
+            }).should.throw(
+                'File ./test/fixtures/require_nosymbol.test module.exports is undefined'
+            );
+        });
     });
 });
