@@ -105,6 +105,22 @@ describe('Compiler', function () {
             compiler.compile(frame).should.eql(expected);
         });
 
+        it('compile self-closing element', function () {
+            var expected = '<input' + '>';
+            var frame = parser.parse(
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <input />' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
+
         it('compile nested components with children', function () {
             var expected = '<div><p>Hello</p></div>';
             var frame = parser.parse(
