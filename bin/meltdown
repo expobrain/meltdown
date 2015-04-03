@@ -1,7 +1,28 @@
 #!/usr/bin/env node
 // -*- mode: js -*-
+
 'use strict';
 
-require('../main').compile(
-    './tests/samples/HelloMessage.js', './tests/output/HelloMessage.html'
-);
+var program = require('commander'),
+    debug   = require('debug')('meltdown'),
+
+    compiler = require('../lib/compiler'),
+
+    VERSION = require('../package.json').version;
+
+
+// Set command line options
+program
+    .version(VERSION)
+    .usage('[options] <source-dir> <dest-dir>')
+    .parse(process.argv);
+
+// Output help if wrong number of arguments
+if (program.args.length !== 2) {
+    program.outputHelp();
+    return 1;
+}
+
+
+// Compile code
+compiler.compileDir(program.args[0], program.args[1]);

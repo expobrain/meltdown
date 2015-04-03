@@ -1,7 +1,0 @@
-#!/usr/bin/env node
-// -*- mode: js -*-
-'use strict';
-
-require('../main').ast(
-    './test/fixtures/HelloMessage.js', './test/output/HelloMessage.ast.json'
-);
