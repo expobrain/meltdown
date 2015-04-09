@@ -10,7 +10,7 @@ var should  = require('should'),
 
 
 describe('Compiler', function () {
-    describe('#compile', function () {
+    describe('#basics', function () {
         it('compile simple HTML', function () {
             var expected = '<div>Hello</div>';
             var frame = parser.parse(
@@ -52,6 +52,24 @@ describe('Compiler', function () {
             compiler.compile(frame).should.eql(expected);
         });
 
+        it('compile self-closing element', function () {
+            var expected = '<input' + '>';
+            var frame = parser.parse(
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <input />' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
+    });
+
+    describe('#inline', function () {
         it('compile simple template', function () {
             var expected = '<div></div>';
             var frame = parser.parse(
@@ -96,22 +114,6 @@ describe('Compiler', function () {
                 '  render: function () {' +
                 '    return (' +
                 '      <Parent><Child></Child></Parent>' +
-                '    );' +
-                '  }' +
-                '});' +
-                'module.exports = Component'
-            );
-
-            compiler.compile(frame).should.eql(expected);
-        });
-
-        it('compile self-closing element', function () {
-            var expected = '<input' + '>';
-            var frame = parser.parse(
-                'var Component = React.createClass({' +
-                '  render: function () {' +
-                '    return (' +
-                '      <input />' +
                 '    );' +
                 '  }' +
                 '});' +
@@ -222,6 +224,39 @@ describe('Compiler', function () {
                 '    }' +
                 '});' +
                 'module.exports = Page;'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
+    });
+
+    describe('#forLoops', function () {
+        it('generate simple for loop', function () {
+            var expected = utils.minifyHtml(
+                '<ul>' +
+                '{% for result in props.results %}' +
+                '    <li>{{result.text}}</li>' +
+                '{% endfor %}' +
+                '</ul>'
+            );
+            var frame = parser.parse(
+                'var ListItem = React.createClass({' +
+                '  render: function() {' +
+                '    return <li>{this.props.data.text}</li>;' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function() {' +
+                '    return (' +
+                '      <ul>' +
+                '        {this.props.results.map(function(result) {' +
+                '           return <ListItem key={result.id} data={result}/>;' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
             );
 
             compiler.compile(frame).should.eql(expected);
