@@ -112,6 +112,45 @@ describe('Preprocessors', function () {
             frame.ast.should.be.eql(expected.ast);
         });
 
+        it('simple inline with arguments', function () {
+            var expected = parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div>{this.props.data}</div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div>{this.props.name}</div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+            var frame = parser.parse(
+                'var Panel = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div>{this.props.data}</div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <Panel data={this.props.name}></Panel>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+
         it('simple inline with children', function () {
             var expected = parse(
                 'var Panel = React.createClass({' +
@@ -305,6 +344,51 @@ describe('Preprocessors', function () {
                 '});' +
                 'module.exports = Component'
             );
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+    });
+
+    describe('#forLoops', function () {
+        it('generate simple for loop', function () {
+            var expected = parse(
+                'var ListItem = React.createClass({' +
+                '  render: function() {' +
+                '    return <li>{this.props.data.text}</li>;' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function() {' +
+                '    return (' +
+                '      <ul>' +
+                '        {this.props.results.map(function(result) {' +
+                '           return <li>{result.text}</li>' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+            var frame = trimLiterals(parser.parse(
+                'var ListItem = React.createClass({' +
+                '  render: function() {' +
+                '    return <li>{this.props.data.text}</li>;' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function() {' +
+                '    return (' +
+                '      <ul>' +
+                '        {this.props.results.map(function(result) {' +
+                '           return <ListItem key={result.id} data={result}/>;' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            ));
 
             frame.ast.should.be.eql(expected.ast);
         });
