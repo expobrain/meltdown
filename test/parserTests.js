@@ -41,22 +41,42 @@ describe('Preprocessors', function () {
         });
     }
 
-    it('throw exception if AST root node is not Program', function () {
-        var preprocessors = [parser.filterModuleExports];
+    describe('#basic', function () {
+        it('throw exception if AST root node is not Program', function () {
+            var preprocessors = [parser.filterModuleExports];
 
-        _.forEach(preprocessors, function (preprocessor) {
-            // Not a Program
-            (function () {
-                parser.filterReactCreateClass({
-                    type: 'BlockStatement',
-                    body: []
-                });
-            }).should.throw();
+            _.forEach(preprocessors, function (preprocessor) {
+                // Not a Program
+                (function () {
+                    parser.filterReactCreateClass({
+                        type: 'BlockStatement',
+                        body: []
+                    });
+                }).should.throw();
 
-            // Null root
-            (function () {
-                parser.filterReactCreateClass();
-            }).should.throw();
+                // Null root
+                (function () {
+                    parser.filterReactCreateClass();
+                }).should.throw();
+            });
+        });
+
+        it('supports arrow functions', function () {
+            var source = (
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div onClick={ (event)=> { return; }}></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            var expected = parse(source);
+            var frame = parser.parse(source);
+
+            frame.ast.should.be.eql(expected.ast);
         });
     });
 
