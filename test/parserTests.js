@@ -78,6 +78,24 @@ describe('Preprocessors', function () {
 
             frame.ast.should.be.eql(expected.ast);
         });
+
+        it('element attribute without value', function () {
+            var source = (
+                'var Component = React.createClass({' +
+                '  render: function () {' +
+                '    return (' +
+                '      <div no-attr-value></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            var expected = parse(source);
+            var frame = parser.parse(source);
+
+            frame.ast.should.be.eql(expected.ast);
+        });
     });
 
     describe('#filterModuleExports', function () {
