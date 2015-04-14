@@ -261,5 +261,36 @@ describe('Compiler', function () {
 
             compiler.compile(frame).should.eql(expected);
         });
+
+        it('loop with value and key', function () {
+            var expected = utils.minifyHtml(
+                '<ul>' +
+                '{% for key, value in props.results %}' +
+                '    <li>{{value.text}}</li>' +
+                '{% endfor %}' +
+                '</ul>'
+            );
+            var frame = parser.parse(
+                'var ListItem = React.createClass({' +
+                '  render: function() {' +
+                '    return <li>{this.props.data.text}</li>;' +
+                '  }' +
+                '});' +
+                'var Component = React.createClass({' +
+                '  render: function() {' +
+                '    return (' +
+                '      <ul>' +
+                '        {this.props.results.map(function(value, key) {' +
+                '           return <ListItem key={value} data={value}/>;' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
     });
 });
