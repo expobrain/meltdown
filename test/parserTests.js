@@ -64,7 +64,7 @@ describe('Preprocessors', function () {
         it('supports arrow functions', function () {
             var source = (
                 'var Component = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div onClick={ (event)=> { return; }}></div>' +
                 '    );' +
@@ -82,7 +82,7 @@ describe('Preprocessors', function () {
         it('element attribute without value', function () {
             var source = (
                 'var Component = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div no-attr-value></div>' +
                 '    );' +
@@ -114,14 +114,14 @@ describe('Preprocessors', function () {
         it('simple inline without children', function () {
             var expected = parse(
                 'var Panel = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div></div>' +
                 '    );' +
                 '  }' +
                 '});' +
                 'var Component = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div></div>' +
                 '    );' +
@@ -153,14 +153,14 @@ describe('Preprocessors', function () {
         it('simple inline with arguments', function () {
             var expected = parse(
                 'var Panel = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div>{this.props.data}</div>' +
                 '    );' +
                 '  }' +
                 '});' +
                 'var Component = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div>{this.props.name}</div>' +
                 '    );' +
@@ -192,7 +192,7 @@ describe('Preprocessors', function () {
         it('simple inline with children', function () {
             var expected = parse(
                 'var Panel = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div>' +
                 '        <p>{this.props.children}</p>' +
@@ -201,7 +201,7 @@ describe('Preprocessors', function () {
                 '  }' +
                 '});' +
                 'var Component = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div>' +
                 '        <p>Hello</p>' +
@@ -237,7 +237,7 @@ describe('Preprocessors', function () {
         it('multiple nested inlines with children', function () {
             var expected = parse(
                 'var Content = React.createClass({' +
-                '    render: function () {' +
+                '    render: () => {' +
                 '        return (' +
                 '            <div className="content">' +
                 '               {this.props.children}' +
@@ -246,14 +246,14 @@ describe('Preprocessors', function () {
                 '    }' +
                 '});' +
                 'var ResultList = React.createClass({' +
-                '    render: function () {' +
+                '    render: () => {' +
                 '        return (' +
                 '            <ol></ol>' +
                 '        );' +
                 '    }' +
                 '});' +
                 'var Panel = React.createClass({' +
-                '    render: function () {' +
+                '    render: () => {' +
                 '        return (' +
                 '            <div className="panel">' +
                 '                {this.props.children}' +
@@ -262,14 +262,14 @@ describe('Preprocessors', function () {
                 '    }' +
                 '});' +
                 'var Header = React.createClass({' +
-                '    render: function () {' +
+                '    render: () => {' +
                 '        return (' +
                 '            <header></header>' +
                 '        );' +
                 '    }' +
                 '});' +
                 'var Page = React.createClass({' +
-                '    render: function () {' +
+                '    render: () => {' +
                 '        return (' +
                 '            <div className="content">' +
                 '                <header></header>' +
@@ -336,21 +336,21 @@ describe('Preprocessors', function () {
         it('nested inline without children', function () {
             var expected = parse(
                 'var Parent = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div></div>' +
                 '    );' +
                 '  }' +
                 '});' +
                 'var Child = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <p></p>' +
                 '    );' +
                 '  }' +
                 '});' +
                 'var Component = React.createClass({' +
-                '  render: function () {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <div></div>' +
                 '    );' +
@@ -387,19 +387,54 @@ describe('Preprocessors', function () {
         });
     });
 
+    describe('#anonymousFunctions', function () {
+        it("convert Anonymous Function into Arrow Function", function () {
+            var expected = parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <ul>' +
+                '        {this.props.results.map((result) => {' +
+                '           return <li></li>;' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+            var frame = trimLiterals(parser.parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <ul>' +
+                '        {this.props.results.map(function (result) {' +
+                '           return <li></li>;' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            ));
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+    });
+
     describe('#forLoops', function () {
         it('generate simple for loop', function () {
             var expected = parse(
                 'var ListItem = React.createClass({' +
-                '  render: function() {' +
+                '  render: () => {' +
                 '    return <li>{this.props.data.text}</li>;' +
                 '  }' +
                 '});' +
                 'var Component = React.createClass({' +
-                '  render: function() {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <ul>' +
-                '        {this.props.results.map(function(result) {' +
+                '        {this.props.results.map((result) => {' +
                 '           return <li>{result.text}</li>' +
                 '        })}' +
                 '      </ul>' +
@@ -410,12 +445,12 @@ describe('Preprocessors', function () {
             );
             var frame = trimLiterals(parser.parse(
                 'var ListItem = React.createClass({' +
-                '  render: function() {' +
+                '  render: () => {' +
                 '    return <li>{this.props.data.text}</li>;' +
                 '  }' +
                 '});' +
                 'var Component = React.createClass({' +
-                '  render: function() {' +
+                '  render: () => {' +
                 '    return (' +
                 '      <ul>' +
                 '        {this.props.results.map(function(result) {' +
