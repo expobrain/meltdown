@@ -239,7 +239,7 @@ describe('Preprocessors', function () {
                 'var Content = React.createClass({' +
                 '    render: () => {' +
                 '        return (' +
-                '            <div className="content">' +
+                '            <div class="content">' +
                 '               {this.props.children}' +
                 '            </div>' +
                 '        );' +
@@ -255,7 +255,7 @@ describe('Preprocessors', function () {
                 'var Panel = React.createClass({' +
                 '    render: () => {' +
                 '        return (' +
-                '            <div className="panel">' +
+                '            <div class="panel">' +
                 '                {this.props.children}' +
                 '            </div>' +
                 '        );' +
@@ -271,9 +271,9 @@ describe('Preprocessors', function () {
                 'var Page = React.createClass({' +
                 '    render: () => {' +
                 '        return (' +
-                '            <div className="content">' +
+                '            <div class="content">' +
                 '                <header></header>' +
-                '                <div className="panel">' +
+                '                <div class="panel">' +
                 '                    <ol></ol>' +
                 '                </div>' +
                 '            </div>' +
@@ -412,6 +412,33 @@ describe('Preprocessors', function () {
                 '           return <li></li>;' +
                 '        })}' +
                 '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            ));
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+    });
+
+    describe('#className', function () {
+        it("convert className attribute into class", function () {
+            var expected = parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <div class="my-class"></div>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+            var frame = trimLiterals(parser.parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <div className="my-class"></div>' +
                 '    );' +
                 '  }' +
                 '});' +

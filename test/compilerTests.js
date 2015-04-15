@@ -171,9 +171,9 @@ describe('Compiler', function () {
 
         it('compile multiple inline components with children', function() {
             var expected = utils.minifyHtml(
-                '<div className="content">' +
+                '<div class="content">' +
                 '    <header></header>' +
-                '    <div className="panel">' +
+                '    <div class="panel">' +
                 '        <ol></ol>' +
                 '    </div>' +
                 '</div>'
