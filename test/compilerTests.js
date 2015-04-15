@@ -265,7 +265,7 @@ describe('Compiler', function () {
         it('loop with value and key', function () {
             var expected = utils.minifyHtml(
                 '<ul>' +
-                '{% for key, value in props.results %}' +
+                '{% for key, value in props.results.items %}' +
                 '    <li>{{value.text}}</li>' +
                 '{% endfor %}' +
                 '</ul>'
