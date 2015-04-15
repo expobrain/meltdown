@@ -231,7 +231,7 @@ describe('Compiler', function () {
     });
 
     describe('#forLoops', function () {
-        it('generate simple for loop', function () {
+        it('generate simple for loop with inline', function () {
             var expected = utils.minifyHtml(
                 '<ul>' +
                 '{% for result in props.results %}' +
@@ -262,26 +262,22 @@ describe('Compiler', function () {
             compiler.compile(frame).should.eql(expected);
         });
 
-        it('loop with value and key', function () {
+        // IMPLEMENT ME!!
+        xit('loop with value and key', function () {
             var expected = utils.minifyHtml(
                 '<ul>' +
-                '{% for key, value in props.results.items %}' +
-                '    <li>{{value.text}}</li>' +
+                '{% for value in props.results %}' +
+                '    <li>{{forloop.counter}}{{value.text}}</li>' +
                 '{% endfor %}' +
                 '</ul>'
             );
             var frame = parser.parse(
-                'var ListItem = React.createClass({' +
-                '  render: function() {' +
-                '    return <li>{this.props.data.text}</li>;' +
-                '  }' +
-                '});' +
                 'var Component = React.createClass({' +
                 '  render: function() {' +
                 '    return (' +
                 '      <ul>' +
-                '        {this.props.results.map(function(value, key) {' +
-                '           return <ListItem key={value} data={value}/>;' +
+                '        {this.props.results.map(function(value, index) {' +
+                '           return <li>{index}{value}</li>;' +
                 '        })}' +
                 '      </ul>' +
                 '    );' +
