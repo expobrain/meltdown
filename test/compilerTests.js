@@ -262,6 +262,33 @@ describe('Compiler', function () {
             compiler.compile(frame).should.eql(expected);
         });
 
+        it("for loop from lodash map()", function () {
+            var expected = utils.minifyHtml(
+                '<ul>' +
+                '{% for key, value in props.results.items %}' +
+                '    <li>{{value.text}}</li>' +
+                '{% endfor %}' +
+                '</ul>'
+            );
+            var frame = parser.parse(
+                'var _ = require("lodash");' +
+                'var Component = React.createClass({' +
+                '  render: function() {' +
+                '    return (' +
+                '      <ul>' +
+                '        {_.map(this.props.results, function(value, key) {' +
+                '           return <li>{value.text}</li>;' +
+                '        })}' +
+                '      </ul>' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component'
+            );
+
+            compiler.compile(frame).should.eql(expected);
+        });
+
         // IMPLEMENT ME!!
         xit('loop with value and key', function () {
             var expected = utils.minifyHtml(

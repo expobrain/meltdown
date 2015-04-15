@@ -9,4 +9,6 @@ To-do
 - add support for `dangerouslySetInnerHTML`
 - remove limitations on `module.exports` so any expression can be exported
 - concatenation of expressions
-- add support for Object.keys()
+- LOW PRIORITY: add support for Object.keys()
+- on compiling Lodash.map() add check to test if iterable is an array or a
+  dictionary (test that the `items` attribute is not null for dicts)
