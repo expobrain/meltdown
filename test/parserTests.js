@@ -556,5 +556,13 @@ describe('Preprocessors', function () {
 
             frame.ast.should.be.eql(expected.ast);
         });
+
+        it('do not inline builtin modules', function () {
+            var source = 'var a = require("buffer");';
+            var expected = parse(source);
+            var frame = parser.parse(source);
+
+            frame.ast.should.be.eql(expected.ast);
+        });
     });
 });
