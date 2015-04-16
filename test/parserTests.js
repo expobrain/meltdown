@@ -79,6 +79,13 @@ describe('Preprocessors', function () {
             frame.ast.should.be.eql(expected.ast);
         });
 
+        it('variable declarations without definition', function () {
+            var expected = parse('var myVariable;');
+            var frame = parser.parse('var myVariable;');
+
+            frame.ast.should.be.eql(expected.ast);
+        });
+
         it('element attribute without value', function () {
             var source = (
                 'var Component = React.createClass({' +
@@ -540,16 +547,14 @@ describe('Preprocessors', function () {
             frame.ast.should.be.eql(expected.ast);
         });
 
-        it('throw exception if export is not a symbol', function () {
-            var data = (
+        it('do not inline require if no module.exports', function () {
+            var source = (
                 'var a = require("./test/fixtures/require_nosymbol.test");'
             );
+            var expected = parse(source);
+            var frame = parser.parse(source);
 
-            (function () {
-                parser.parse(data);
-            }).should.throw(
-                'File ./test/fixtures/require_nosymbol.test module.exports is undefined'
-            );
+            frame.ast.should.be.eql(expected.ast);
         });
     });
 });
