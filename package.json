@@ -29,6 +29,7 @@
     "html-minifier": "~0.7.0",
     "lodash": "~3.6.0",
     "mkdirp": "~0.5.0",
+    "module-info": "https://github.com/expobrain/node-module-info.git#b7453a38d7b3672cb9a9ff320386b5e50f3eccb9",
     "react": "~0.13.0"
   }
 }
