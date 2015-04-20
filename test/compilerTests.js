@@ -316,4 +316,26 @@ describe('Compiler', function () {
             compiler.compile(frame).should.eql(expected);
         });
     });
+
+    describe("#replaceReactRouter", function () {
+        it("replace simple Link component", function () {
+            var options = {
+                replaceReactRouter: true
+            };
+            var expected = '<a href="{% url \'my-route-name\' %}"></a>';
+            var frame = parser.parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <Link to="my-route-name" />' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component',
+                options
+            );
+
+            compiler.compile(frame, options).should.be.eql(expected);
+        })
+    });
 });

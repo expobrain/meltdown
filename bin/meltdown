@@ -15,6 +15,7 @@ var program = require('commander'),
 program
     .version(VERSION)
     .usage('[options] <source-dir> <dest-dir>')
+    .option('--replaceReactRouter', 'Replace react-router components internally')
     .parse(process.argv);
 
 // Output help if wrong number of arguments
@@ -25,4 +26,6 @@ if (program.args.length !== 2) {
 
 
 // Compile code
-compiler.compileDir(program.args[0], program.args[1]);
+compiler.compileDir(program.args[0], program.args[1], {
+    replaceReactRouter: program.replaceReactRouter
+});
