@@ -381,5 +381,27 @@ describe('Compiler', function () {
 
             compiler.compile(frame, options).should.be.eql(expected);
         })
+
+        it("replace Link component with empty alt", function () {
+            var options = {
+                replaceReactRouter: true
+            };
+            var expected = (
+                '<a href="{% url \'my-route-name\' %}"></a>'
+            );
+            var frame = parser.parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <Link to="my-route-name" alt />' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component',
+                options
+            );
+
+            compiler.compile(frame, options).should.be.eql(expected);
+        })
     });
 });
