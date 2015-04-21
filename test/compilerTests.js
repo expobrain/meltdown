@@ -359,5 +359,27 @@ describe('Compiler', function () {
 
             compiler.compile(frame, options).should.be.eql(expected);
         })
+
+        it("replace Link component with alt", function () {
+            var options = {
+                replaceReactRouter: true
+            };
+            var expected = (
+                '<a href="{% url \'my-route-name\' %}" alt="{{myVariable}}"></a>'
+            );
+            var frame = parser.parse(
+                'var Component = React.createClass({' +
+                '  render: () => {' +
+                '    return (' +
+                '      <Link to="my-route-name" alt={myVariable} />' +
+                '    );' +
+                '  }' +
+                '});' +
+                'module.exports = Component',
+                options
+            );
+
+            compiler.compile(frame, options).should.be.eql(expected);
+        })
     });
 });
