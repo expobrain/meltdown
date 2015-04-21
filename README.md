@@ -4,8 +4,8 @@ https://github.com/estree/estree/blob/master/spec.md
 To-do
 -----
 
-- HIGH PRIORITY: refactore the code loader to use [`require.resolve()`][require_resolve]
 - HIGH PRIORITY: add support for `react-router`
+- HIGH PRIORITY: add support for ES6
 - concatenation of expressions
 - remove limitations on `module.exports` so any expression can be exported
 - on compiling Lodash.map() add check to test if iterable is an array or a
